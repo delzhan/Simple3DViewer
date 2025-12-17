@@ -73,16 +73,16 @@ public class AffineTransformations {
      */
     public static Matrix4f rotateAroundAxis(Vector3f axis, float angle) {
         // Нормализуем ось на всякий случай
-        axis = axis.normalize();
+        axis = axis.normalizeV();
         float rad = (float) Math.toRadians(angle);
 
         float cosA = (float) cos(rad);
         float sinA = (float) sin(rad);
         float oneMinusCosA = 1 - cosA;
 
-        float x = axis.x;
-        float y = axis.y;
-        float z = axis.z;
+        float x = axis.getX();
+        float y = axis.getY();
+        float z = axis.getZ();
 
         // фрмула Родригеса для вращения вокруг произвольной оси
         //я почти перестаю понимать, что я творю, но работает - не трогай
@@ -110,7 +110,7 @@ public class AffineTransformations {
      * Создает матрицу перемещения из вектора
      */
     public static Matrix4f translate(Vector3f translation) {
-        return translate(translation.x, translation.y, translation.z);
+        return translate(translation.getX(), translation.getY(), translation.getZ());
     }
 
     /**
@@ -129,7 +129,7 @@ public class AffineTransformations {
      * Создает матрицу масштабирования из вектора
      */
     public static Matrix4f scale(Vector3f scale) {
-        return scale(scale.x, scale.y, scale.z);
+        return scale(scale.getX(), scale.getY(), scale.getZ());
     }
 
     /**
@@ -140,9 +140,9 @@ public class AffineTransformations {
             Vector3f rotation,
             Vector3f scale
     ) {
-        Matrix4f scaleMat = scale(scale.x, scale.y, scale.z);
-        Matrix4f rotationMat = rotate(rotation.x, rotation.y, rotation.z);
-        Matrix4f translationMat = translate(translation.x, translation.y, translation.z);
+        Matrix4f scaleMat = scale(scale.getX(), scale.getY(), scale.getZ());
+        Matrix4f rotationMat = rotate(rotation.getX(), rotation.getY(), rotation.getZ());
+        Matrix4f translationMat = translate(translation.getX(), translation.getY(), translation.getZ());
 
         // Порядок: M = T * R * S
         Matrix4f result = translationMat.multiplyNew(rotationMat);
@@ -155,15 +155,15 @@ public class AffineTransformations {
      * Создает матрицу вида (look-at матрицу) для камеры
      */
     public static Matrix4f lookAt(Vector3f eye, Vector3f target, Vector3f up) {
-        Vector3f zAxis = eye.sub(target).normalize();  // Направление "вперед"
-        Vector3f xAxis = up.cross(zAxis).normalize();  // Направление "вправо"
+        Vector3f zAxis = eye.sub(target).normalizeV();  // Направление "вперед"
+        Vector3f xAxis = up.cross(zAxis).normalizeV();  // Направление "вправо"
         Vector3f yAxis = zAxis.cross(xAxis);           // Направление "вверх"
 
         // Матрица вида
         return new Matrix4f(
-                xAxis.x, xAxis.y, xAxis.z, -xAxis.dot(eye),
-                yAxis.x, yAxis.y, yAxis.z, -yAxis.dot(eye),
-                zAxis.x, zAxis.y, zAxis.z, -zAxis.dot(eye),
+                xAxis.getX(), xAxis.getY(), xAxis.getZ(), -xAxis.dot(eye),
+                yAxis.getX(), yAxis.getY(), yAxis.getZ(), -yAxis.dot(eye),
+                zAxis.getX(), zAxis.getY(), zAxis.getZ(), -zAxis.dot(eye),
                 0,       0,       0,       1
         );
     }
@@ -209,9 +209,9 @@ public class AffineTransformations {
      */
     public static Vector3f lerpRotation(Vector3f start, Vector3f end, float t) {
         // Простая линейная интерполяция каждого угла
-        float x = start.x + (end.x - start.x) * t;
-        float y = start.y + (end.y - start.y) * t;
-        float z = start.z + (end.z - start.z) * t;
+        float x = start.getX() + (end.getX() - start.getX()) * t;
+        float y = start.getY() + (end.getY() - start.getY()) * t;
+        float z = start.getZ() + (end.getZ() - start.getZ()) * t;
 
         return new Vector3f(x, y, z);
     }

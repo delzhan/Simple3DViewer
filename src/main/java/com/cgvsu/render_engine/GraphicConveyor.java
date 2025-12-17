@@ -100,7 +100,6 @@ public class GraphicConveyor {
     }
 
 
-
     /**
      * Преобразует вершину в экранные координаты.
      */
@@ -109,3 +108,4 @@ public class GraphicConveyor {
         float y = (1 - (vertex.getY() + 1) * 0.5f) * height;
         return new Point2f(x, y);
     }
+}
