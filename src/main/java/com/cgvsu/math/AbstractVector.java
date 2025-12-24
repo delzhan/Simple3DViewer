@@ -222,7 +222,8 @@ public abstract class AbstractVector {
     /**
      * Проверка, что нам скармливают одинаковые вектора. Пусть будет, на всякий, в случае чего - не используйте
      */
-
+    // ^ Настя, кого ты там накормить хочешь?
+    // |
     private void equalsLength(AbstractVector other) {
         if (this.components.length != other.components.length) {
             throw new IndexOutOfBoundsException("Разная длина");

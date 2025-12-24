@@ -1,54 +1,101 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.control.Accordion?>
 <?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ScrollBar?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.input.KeyCodeCombination?>
 <?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.text.Font?>
 
-<AnchorPane fx:id="anchorPane" xmlns:fx="http://javafx.com/fxml" fx:controller="com.cgvsu.GuiController">
-    <MenuBar>
+<AnchorPane fx:id="anchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" style="-fx-background-color: #90ad99;" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/25" fx:controller="com.cgvsu.GuiController">
+    <MenuBar prefHeight="25.0" prefWidth="770.0" style="-fx-background-color: #2e5546; -fx-border-radius: 10;" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
         <Menu mnemonicParsing="false" text="File">
             <MenuItem mnemonicParsing="false" onAction="#onOpenModelMenuItemClick" text="Load Model">
             <accelerator>
-                <KeyCodeCombination alt="UP" control="DOWN" meta="UP" shift="UP" shortcut="UP" code="F"/>
+                <KeyCodeCombination alt="UP" code="F" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
             </accelerator>
             </MenuItem>
+         <MenuItem mnemonicParsing="false" text="Save" />
+         <MenuItem mnemonicParsing="false" text="Save All" />
         </Menu>
         <Menu mnemonicParsing="false" text="Camera Options">
             <MenuItem mnemonicParsing="false" onAction="#handleCameraForward" text="Forward">
                 <accelerator>
-                    <KeyCodeCombination alt="UP" control="UP" meta="UP" shift="UP" shortcut="UP" code="UP"/>
+                    <KeyCodeCombination alt="UP" code="UP" control="UP" meta="UP" shift="UP" shortcut="UP" />
                 </accelerator>
             </MenuItem>
             <MenuItem mnemonicParsing="false" onAction="#handleCameraBackward" text="Backward">
                 <accelerator>
-                    <KeyCodeCombination alt="UP" control="UP" meta="UP" shift="UP" shortcut="UP" code="DOWN"/>
+                    <KeyCodeCombination alt="UP" code="DOWN" control="UP" meta="UP" shift="UP" shortcut="UP" />
                 </accelerator>
             </MenuItem>
             <MenuItem mnemonicParsing="false" onAction="#handleCameraLeft" text="Left">
                 <accelerator>
-                    <KeyCodeCombination alt="UP" control="UP" meta="UP" shift="UP" shortcut="UP" code="LEFT"/>
+                    <KeyCodeCombination alt="UP" code="LEFT" control="UP" meta="UP" shift="UP" shortcut="UP" />
                 </accelerator>
             </MenuItem>
             <MenuItem mnemonicParsing="false" onAction="#handleCameraRight" text="Right">
                 <accelerator>
-                    <KeyCodeCombination alt="UP" control="UP" meta="UP" shift="UP" shortcut="UP" code="RIGHT"/>
+                    <KeyCodeCombination alt="UP" code="RIGHT" control="UP" meta="UP" shift="UP" shortcut="UP" />
                 </accelerator>
             </MenuItem>
             <MenuItem mnemonicParsing="false" onAction="#handleCameraUp" text="Up">
                 <accelerator>
-                    <KeyCodeCombination alt="UP" control="UP" meta="UP" shift="UP" shortcut="UP" code="W"/>
+                    <KeyCodeCombination alt="UP" code="W" control="UP" meta="UP" shift="UP" shortcut="UP" />
                 </accelerator>
             </MenuItem>
             <MenuItem mnemonicParsing="false" onAction="#handleCameraDown" text="Down">
                 <accelerator>
-                    <KeyCodeCombination alt="UP" control="UP" meta="UP" shift="UP" shortcut="UP" code="S"/>
+                    <KeyCodeCombination alt="UP" code="S" control="UP" meta="UP" shift="UP" shortcut="UP" />
                 </accelerator>
             </MenuItem>
         </Menu>
+      <Menu mnemonicParsing="false" text="View">
+        <items>
+          <MenuItem mnemonicParsing="false" text="Dark Theme">
+               <accelerator>
+                  <KeyCodeCombination alt="UP" code="D" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+               </accelerator>
+            </MenuItem>
+        </items>
+      </Menu>
     </MenuBar>
 
-    <Canvas fx:id="canvas" width="1600" height="870" AnchorPane.topAnchor="30.0"/>
+    <Canvas fx:id="canvas" height="693.0" layoutY="25.0" width="770.0" AnchorPane.topAnchor="25.0" />
+   <BorderPane layoutX="197.0" layoutY="25.0" prefHeight="693.0" prefWidth="573.0" />
+   <AnchorPane layoutY="25.0" style="-fx-background-color: #678470;" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="25.0">
+      <children>
+         <ScrollBar layoutX="182.0" maxWidth="-Infinity" orientation="VERTICAL" style="-fx-background-color: #466C5E;" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="0.0" />
+         <TextField alignment="TOP_CENTER" prefHeight="34.0" prefWidth="182.0" style="-fx-background-color: #466C5E;" text="Objects">
+            <font>
+               <Font name="Times New Roman" size="14.0" />
+            </font>
+         </TextField>
+         <Accordion layoutY="34.0" prefHeight="660.0" prefWidth="182.0" style="-fx-background-color: #90ad99;" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="34.0">
+           <panes>
+             <TitledPane animated="false" style="-fx-background-color: #90ad99;" text="Models" textFill="#052221">
+               <content>
+                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" style="-fx-background-color: #90ad99;" />
+               </content>
+             </TitledPane>
+             <TitledPane animated="false" style="-fx-background-color: #90ad99;" text="Cameras" textFill="#052221">
+               <content>
+                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" style="-fx-background-color: #90ad99;" />
+               </content>
+             </TitledPane>
+             <TitledPane animated="false" style="-fx-background-color: #90ad99;" text="Light Models" textFill="#052221">
+               <content>
+                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" style="-fx-background-color: #90ad99;" />
+               </content>
+             </TitledPane>
+           </panes>
+         </Accordion>
+      </children>
+   </AnchorPane>
 </AnchorPane>
