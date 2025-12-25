@@ -128,8 +128,8 @@ public class Camera {
         float elevation = (float) Math.toDegrees(Math.asin(direction.getY()));
         this.elevation = elevation;
 
-        // Вычислить расстояние (distance)
-        this.distance = position.sub(target).getLength();
+        // Вычисляем расстояние
+        this.distance = position.sub(target).length();
     }
 
 }

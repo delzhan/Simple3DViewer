@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 /** Катя, обрати внимание, я УЖЕ реализовала несколько камер
- * За тобой - все остальноет по твоей программе!!!
+ * За тобой - все остальноет по твоей программе!!! <- Ты угрожаешь???
  *
  */
 
@@ -36,10 +36,10 @@ public class CameraManager {
     }
 
     public void removeCamera(int id) {
-        if (cameras.size() > 1) { // Keep at least one camera
+        if (cameras.size() > 1) { // Берём хотя бы одну камеру
             cameras.remove(id);
             if (activeCamera == id) {
-                // Set active camera to first available
+                // Устанавливаем первую доступную камеру как активную
                 activeCamera = cameras.keySet().iterator().next();
             }
         }
