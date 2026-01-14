@@ -1,6 +1,8 @@
-package com.cgvsu.model;
+package com.cgvsu.model.removers;
 
 import com.cgvsu.math.Vector3f;
+import com.cgvsu.model.Model;
+import com.cgvsu.model.Polygon;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,29 +11,29 @@ import java.util.List;
 
 public class VertexRemover {
     /**
-     * Удаляет указанные вершины и все полигоны, которые их содержат.
+     * РЈРґР°Р»СЏРµС‚ СѓРєР°Р·Р°РЅРЅС‹Рµ РІРµСЂС€РёРЅС‹ Рё РІСЃРµ РїРѕР»РёРіРѕРЅС‹, РєРѕС‚РѕСЂС‹Рµ РёС… СЃРѕРґРµСЂР¶Р°С‚.
      */
     public static void removeVertices(Model model, List<Integer> vertexIndicesToDelete) {
         if (model == null || vertexIndicesToDelete == null || vertexIndicesToDelete.isEmpty()) {
             return;
         }
 
-        // Удаление дубликатов
+        // РЈРґР°Р»РµРЅРёРµ РґСѓР±Р»РёРєР°С‚РѕРІ
         List<Integer> uniqueIndices = new ArrayList<>(new LinkedHashSet<>(vertexIndicesToDelete));
 
-        // Находим и удаляем полигоны, содержащие удаляемые вершины
+        // РќР°С…РѕРґРёРј Рё СѓРґР°Р»СЏРµРј РїРѕР»РёРіРѕРЅС‹, СЃРѕРґРµСЂР¶Р°С‰РёРµ СѓРґР°Р»СЏРµРјС‹Рµ РІРµСЂС€РёРЅС‹
         List<Polygon> polygonsToRemove = new ArrayList<>();
         for (Polygon polygon : model.getPolygons()) {
             for (int vertexIndex : polygon.getVertexIndices()) {
                 if (uniqueIndices.contains(vertexIndex)) {
                     polygonsToRemove.add(polygon);
-                    break; // Этот полигон помечен, переходим к следующему
+                    break; // Р­С‚РѕС‚ РїРѕР»РёРіРѕРЅ РїРѕРјРµС‡РµРЅ, РїРµСЂРµС…РѕРґРёРј Рє СЃР»РµРґСѓСЋС‰РµРјСѓ
                 }
             }
         }
         model.getPolygons().removeAll(polygonsToRemove);
 
-        // Удаляем сами вершины
+        // РЈРґР°Р»СЏРµРј СЃР°РјРё РІРµСЂС€РёРЅС‹
         List<Integer> sortedIndices = new ArrayList<>(uniqueIndices);
         sortedIndices.sort(Collections.reverseOrder());
         for (int objIndex : sortedIndices) {
@@ -46,58 +48,58 @@ public class VertexRemover {
     }
 
     /**
-     * Пересчитывает нормали модели, усредняя нормали граней для каждой вершины.
+     * РџРµСЂРµСЃС‡РёС‚С‹РІР°РµС‚ РЅРѕСЂРјР°Р»Рё РјРѕРґРµР»Рё, СѓСЃСЂРµРґРЅСЏСЏ РЅРѕСЂРјР°Р»Рё РіСЂР°РЅРµР№ РґР»СЏ РєР°Р¶РґРѕР№ РІРµСЂС€РёРЅС‹.
      */
     public static void recalculateNormals(Model model) {
-        // Очищаем старые нормали
+        // РћС‡РёС‰Р°РµРј СЃС‚Р°СЂС‹Рµ РЅРѕСЂРјР°Р»Рё
         model.getNormals().clear();
 
-        // Временный список для хранения суммы нормалей для каждой вершины
+        // Р’СЂРµРјРµРЅРЅС‹Р№ СЃРїРёСЃРѕРє РґР»СЏ С…СЂР°РЅРµРЅРёСЏ СЃСѓРјРјС‹ РЅРѕСЂРјР°Р»РµР№ РґР»СЏ РєР°Р¶РґРѕР№ РІРµСЂС€РёРЅС‹
         List<Vector3f> vertexNormalSums = new ArrayList<>();
         for (int i = 0; i < model.getVertices().size(); i++) {
             vertexNormalSums.add(new Vector3f(0, 0, 0));
         }
 
-        // Вычисляем нормаль для каждого полигона и добавляем её к его вершинам
+        // Р’С‹С‡РёСЃР»СЏРµРј РЅРѕСЂРјР°Р»СЊ РґР»СЏ РєР°Р¶РґРѕРіРѕ РїРѕР»РёРіРѕРЅР° Рё РґРѕР±Р°РІР»СЏРµРј РµС‘ Рє РµРіРѕ РІРµСЂС€РёРЅР°Рј
         for (Polygon polygon : model.getPolygons()) {
             List<Integer> vertexIndices = polygon.getVertexIndices();
-            if (vertexIndices.size() < 3) continue; // Пропускаем некорректные полигоны
+            if (vertexIndices.size() < 3) continue; // РџСЂРѕРїСѓСЃРєР°РµРј РЅРµРєРѕСЂСЂРµРєС‚РЅС‹Рµ РїРѕР»РёРіРѕРЅС‹
 
-            // Получаем вершины полигона
+            // РџРѕР»СѓС‡Р°РµРј РІРµСЂС€РёРЅС‹ РїРѕР»РёРіРѕРЅР°
             Vector3f v0 = model.getVertices().get(vertexIndices.get(0) - 1);
             Vector3f v1 = model.getVertices().get(vertexIndices.get(1) - 1);
             Vector3f v2 = model.getVertices().get(vertexIndices.get(2) - 1);
 
-            // Вычисляем векторы сторон и нормаль полигона
-            Vector3f edge1 = v1.sub(v0);  // Было: subtract(v0)
-            Vector3f edge2 = v2.sub(v0);  // Было: subtract(v0)
-            Vector3f faceNormal = edge1.cross(edge2).normalizeV();  // Было: normalized()
+            // Р’С‹С‡РёСЃР»СЏРµРј РІРµРєС‚РѕСЂС‹ СЃС‚РѕСЂРѕРЅ Рё РЅРѕСЂРјР°Р»СЊ РїРѕР»РёРіРѕРЅР°
+            Vector3f edge1 = v1.sub(v0);
+            Vector3f edge2 = v2.sub(v0);
+            Vector3f faceNormal = edge1.cross(edge2).normalizeV();
 
-            // Добавляем эту нормаль ко всем вершинам полигона
+            // Р”РѕР±Р°РІР»СЏРµРј СЌС‚Сѓ РЅРѕСЂРјР°Р»СЊ РєРѕ РІСЃРµРј РІРµСЂС€РёРЅР°Рј РїРѕР»РёРіРѕРЅР°
             for (int vertexObjIndex : vertexIndices) {
                 int internalIndex = vertexObjIndex - 1;
                 Vector3f currentSum = vertexNormalSums.get(internalIndex);
-                vertexNormalSums.set(internalIndex, currentSum.add(faceNormal));  // add() существует
+                vertexNormalSums.set(internalIndex, currentSum.add(faceNormal));
             }
         }
 
-        // Нормализуем суммы, чтобы получить итоговые нормали вершин, и добавляем в модель
+        // РќРѕСЂРјР°Р»РёР·СѓРµРј СЃСѓРјРјС‹, С‡С‚РѕР±С‹ РїРѕР»СѓС‡РёС‚СЊ РёС‚РѕРіРѕРІС‹Рµ РЅРѕСЂРјР°Р»Рё РІРµСЂС€РёРЅ, Рё РґРѕР±Р°РІР»СЏРµРј РІ РјРѕРґРµР»СЊ
         for (Vector3f sum : vertexNormalSums) {
-            model.getNormals().add(sum.normalizeV());  // Было: normalized()
+            model.getNormals().add(sum.normalizeV());  // Р‘С‹Р»Рѕ: normalized()
         }
 
-        // Обновляем индексы нормалей в полигонах (теперь они 1:1 с вершинами)
+        // РћР±РЅРѕРІР»СЏРµРј РёРЅРґРµРєСЃС‹ РЅРѕСЂРјР°Р»РµР№ РІ РїРѕР»РёРіРѕРЅР°С… (С‚РµРїРµСЂСЊ РѕРЅРё 1:1 СЃ РІРµСЂС€РёРЅР°РјРё)
         for (Polygon polygon : model.getPolygons()) {
             polygon.setNormalIndices(new ArrayList<>(polygon.getVertexIndices()));
         }
     }
 
     /**
-     * Вспомогательный метод для переиндексации полигонов после удаления вершин.
+     * Р’СЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹Р№ РјРµС‚РѕРґ РґР»СЏ РїРµСЂРµРёРЅРґРµРєСЃР°С†РёРё РїРѕР»РёРіРѕРЅРѕРІ РїРѕСЃР»Рµ СѓРґР°Р»РµРЅРёСЏ РІРµСЂС€РёРЅ.
      */
     private static void reindexPolygons(Model model, List<Integer> deletedObjIndices) {
         for (Polygon polygon : model.getPolygons()) {
-            // Переиндексируем вершины
+            // РџРµСЂРµРёРЅРґРµРєСЃРёСЂСѓРµРј РІРµСЂС€РёРЅС‹
             ArrayList<Integer> newVertexIndices = new ArrayList<>();
             for (int oldObjIndex : polygon.getVertexIndices()) {
                 int shift = 0;
@@ -110,7 +112,7 @@ public class VertexRemover {
             }
             polygon.setVertexIndices(newVertexIndices);
 
-            // Переиндексируем нормали (если они были)
+            // РџРµСЂРµРёРЅРґРµРєСЃРёСЂСѓРµРј РЅРѕСЂРјР°Р»Рё (РµСЃР»Рё РѕРЅРё Р±С‹Р»Рё)
             if (polygon.getNormalIndices() != null && !polygon.getNormalIndices().isEmpty()) {
                 ArrayList<Integer> newNormalIndices = new ArrayList<>();
                 for (int oldObjIndex : polygon.getNormalIndices()) {

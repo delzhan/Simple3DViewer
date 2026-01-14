@@ -1,6 +1,9 @@
-package com.cgvsu.model;
+package com.cgvsu.model.removers;
 
 import com.cgvsu.math.Vector3f;
+import com.cgvsu.model.Model;
+import com.cgvsu.model.Polygon;
+
 import java.util.*;
 
 public class PolygonsRemover {

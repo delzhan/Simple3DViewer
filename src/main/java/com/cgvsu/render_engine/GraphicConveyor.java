@@ -1,8 +1,7 @@
 package com.cgvsu.render_engine;
-import javax.vecmath.*;
 
 import com.cgvsu.math.Matrix4f;
-import com.cgvsu.math.Point2f;
+import com.cgvsu.math.Vector2f;
 import com.cgvsu.math.Vector3f;
 import com.cgvsu.math.Vector4f;
 import com.cgvsu.render_engine.AffineTransformations;
@@ -103,9 +102,15 @@ public class GraphicConveyor {
     /**
      * Преобразует вершину в экранные координаты.
      */
-    public static Point2f vertexToPoint(Vector3f vertex, int width, int height) {
-        float x = (vertex.getX() + 1) * 0.5f * width;
-        float y = (1 - (vertex.getY() + 1) * 0.5f) * height;
-        return new Point2f(x, y);
+    public static Vector2f vertexToPoint(Vector3f vertex, int width, int height) {
+        // Преобразование из [-1, 1] в [0, 1]
+        float normalizedX = (vertex.getX() + 1) * 0.5f;
+        float normalizedY = (vertex.getY() + 1) * 0.5f;
+
+        // Преобразование в экранные координаты
+        float screenX = normalizedX * width;
+        float screenY = (1 - normalizedY) * height; // инвертируем Y
+
+        return new Vector2f(screenX, screenY);
     }
 }

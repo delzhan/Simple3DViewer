@@ -1,6 +1,8 @@
-package com.cgvsu.objreader;
+package com.cgvsu;
 
 import com.cgvsu.math.Vector3f;
+import com.cgvsu.objreader.ObjReader;
+import com.cgvsu.objreader.ObjReaderException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -49,18 +51,10 @@ class ObjReaderTest {
 
     @Test
     public void testParseVertex05() {
-        // АГААА! Вот тест, который говорит, что у метода нет проверки на более, чем 3 числа
-        // А такой случай лучше не игнорировать, а сообщать пользователю, что у него что-то не так
-        // ассерт, чтобы не забыть про тест:
-        Assertions.assertTrue(false);
-
-
         ArrayList<String> wordsInLineWithoutToken = new ArrayList<>(Arrays.asList("1.0", "2.0", "3.0", "4.0"));
-        try {
-            ObjReader.parseVertex(wordsInLineWithoutToken, 10);
-        } catch (ObjReaderException exception) {
-            String expectedError = "";
-            Assertions.assertEquals(expectedError, exception.getMessage());
-        }
+        Vector3f result = ObjReader.parseVertex(wordsInLineWithoutToken, 10);
+        Vector3f expectedResult = new Vector3f(1.0f, 2.0f, 3.0f);
+        Assertions.assertTrue(result.equals(expectedResult),
+                        "The method should only use the first 3 numbers, ignoring the rest");
     }
 }
