@@ -11,6 +11,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.io.IOException;
@@ -18,8 +19,9 @@ import java.io.File;
 
 import com.cgvsu.math.Vector3f;
 import com.cgvsu.model.Model;
+import com.cgvsu.model.ModelInstance;
+import com.cgvsu.model.Scene;
 import com.cgvsu.objreader.ObjReader;
-import com.cgvsu.render_engine.Camera;
 
 public class GuiController {
 
@@ -31,12 +33,7 @@ public class GuiController {
     @FXML
     private Canvas canvas;
 
-    private Model mesh = null;
-
-    private Camera camera = new Camera(
-            new Vector3f(0, 00, 100),
-            new Vector3f(0, 0, 0),
-            1.0F, 1, 0.01F, 100);
+    private Scene scene = new Scene();
 
     private Timeline timeline;
 
@@ -53,11 +50,10 @@ public class GuiController {
             double height = canvas.getHeight();
 
             canvas.getGraphicsContext2D().clearRect(0, 0, width, height);
-            camera.setAspectRatio((float) (width / height));
 
-            if (mesh != null) {
-                RenderEngine.render(canvas.getGraphicsContext2D(), camera, mesh, (int) width, (int) height);
-            }
+            scene.getCamera().setAspectRatio((float) (width / height));
+
+            RenderEngine.renderScene(canvas.getGraphicsContext2D(), scene, (int) width, (int) height);
         });
 
         timeline.getKeyFrames().add(frame);
@@ -79,40 +75,160 @@ public class GuiController {
 
         try {
             String fileContent = Files.readString(fileName);
-            mesh = ObjReader.read(fileContent);
-            // todo: обработка ошибок
-        } catch (IOException exception) {
+            Model model = ObjReader.read(fileContent);
 
+            ModelInstance instance = new ModelInstance(model);
+            scene.addModelInstance(instance);
+
+        } catch (IOException exception) {
+            System.err.println("Ошибка загрузки файла: " + exception.getMessage());
+            exception.printStackTrace();
+        } catch (Exception e) {
+            System.err.println("Ошибка парсинга модели: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
     @FXML
     public void handleCameraForward(ActionEvent actionEvent) {
-        camera.movePosition(new Vector3f(0, 0, -TRANSLATION));
+        scene.getCamera().movePosition(new Vector3f(0, 0, -TRANSLATION));
     }
 
     @FXML
     public void handleCameraBackward(ActionEvent actionEvent) {
-        camera.movePosition(new Vector3f(0, 0, TRANSLATION));
+        scene.getCamera().movePosition(new Vector3f(0, 0, TRANSLATION));
     }
 
     @FXML
     public void handleCameraLeft(ActionEvent actionEvent) {
-        camera.movePosition(new Vector3f(TRANSLATION, 0, 0));
+        scene.getCamera().movePosition(new Vector3f(TRANSLATION, 0, 0));
     }
 
     @FXML
     public void handleCameraRight(ActionEvent actionEvent) {
-        camera.movePosition(new Vector3f(-TRANSLATION, 0, 0));
+        scene.getCamera().movePosition(new Vector3f(-TRANSLATION, 0, 0));
     }
 
     @FXML
     public void handleCameraUp(ActionEvent actionEvent) {
-        camera.movePosition(new Vector3f(0, TRANSLATION, 0));
+        scene.getCamera().movePosition(new Vector3f(0, TRANSLATION, 0));
     }
 
     @FXML
     public void handleCameraDown(ActionEvent actionEvent) {
-        camera.movePosition(new Vector3f(0, -TRANSLATION, 0));
+        scene.getCamera().movePosition(new Vector3f(0, -TRANSLATION, 0));
+    }
+
+    @FXML
+    public void handleSelectFirstModel(ActionEvent actionEvent) {
+        if (scene.getModelCount() > 0) {
+            scene.selectModel(0);
+        }
+    }
+
+    @FXML
+    public void handleSelectSecondModel(ActionEvent actionEvent) {
+        if (scene.getModelCount() > 1) {
+            scene.selectModel(1);
+        }
+    }
+
+    @FXML
+    public void handleAddSecondToSelection(ActionEvent actionEvent) {
+        if (scene.getModelCount() > 1) {
+            scene.addToSelection(1);
+        }
+    }
+
+    @FXML
+    public void handleClearSelection(ActionEvent actionEvent) {
+        scene.clearSelection();
+    }
+
+    @FXML
+    public void handleSelectAllModels(ActionEvent actionEvent) {
+        scene.selectAll();
+    }
+
+    @FXML
+    public void handleRotateSelectedX(ActionEvent actionEvent) {
+        scene.rotateSelectedX(10.0);
+    }
+
+    @FXML
+    public void handleRotateSelectedY(ActionEvent actionEvent) {
+        scene.rotateSelectedY(10.0);
+    }
+
+    @FXML
+    public void handleRotateSelectedZ(ActionEvent actionEvent) {
+        scene.rotateSelectedZ(10.0);
+    }
+
+    @FXML
+    public void handleScaleSelectedIncrease(ActionEvent actionEvent) {
+        scene.scaleSelected(1.1);
+    }
+
+    @FXML
+    public void handleScaleSelectedDecrease(ActionEvent actionEvent) {
+        scene.scaleSelected(0.9);
+    }
+
+    @FXML
+    public void handleTranslateSelectedXPos(ActionEvent actionEvent) {
+        scene.translateSelectedX(5.0);
+    }
+
+    @FXML
+    public void handleTranslateSelectedXNeg(ActionEvent actionEvent) {
+        scene.translateSelectedX(-5.0);
+    }
+
+    @FXML
+    public void handleTranslateSelectedYPos(ActionEvent actionEvent) {
+        scene.translateSelectedY(5.0);
+    }
+
+    @FXML
+    public void handleTranslateSelectedYNeg(ActionEvent actionEvent) {
+        scene.translateSelectedY(-5.0);
+    }
+
+    @FXML
+    public void handleTranslateSelectedZPos(ActionEvent actionEvent) {
+        scene.translateSelectedZ(5.0);
+    }
+
+    @FXML
+    public void handleTranslateSelectedZNeg(ActionEvent actionEvent) {
+        scene.translateSelectedZ(-5.0);
+    }
+
+    @FXML
+    public void handleResetSelectedTransformations(ActionEvent actionEvent) {
+        scene.resetSelectedTransformations();
+    }
+
+    @FXML
+    public void handleClearScene(ActionEvent actionEvent) { //Очищает сцену (удаляет все модели)
+        scene.clear();
+    }
+
+    @FXML
+    public void handleChangeBackground(ActionEvent actionEvent) { // Изменяет цвет фона сцены
+        // Используем Vector3f для установки цвета
+        scene.setBackgroundColor(new Vector3f(0.1f, 0.1f, 0.3f)); // Темно-синий
+    }
+
+    @FXML
+    public void handleRemoveSelectedModels(ActionEvent actionEvent) { // Удаляет выбранные модели
+        scene.removeSelectedModels();
+    }
+
+    public String getSceneInfo() { // Возвращает информацию о текущем состоянии сцены
+        return String.format("Моделей на сцене: %d, Выбрано: %d",
+                scene.getModelCount(),
+                scene.getSelectedIndices().size());
     }
 }
