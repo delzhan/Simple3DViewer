@@ -14,7 +14,7 @@ D:\CG_Final_Project\Simple3DViewer\src\main\java\com\cgvsu\model\removers\Vertex
 D:\CG_Final_Project\Simple3DViewer\src\main\java\com\cgvsu\model\removers\PolygonsRemover.java
 D:\CG_Final_Project\Simple3DViewer\src\main\java\com\cgvsu\math\AbstractMatrix.java
 D:\CG_Final_Project\Simple3DViewer\src\main\java\com\cgvsu\objwriter\ObjWriter.java
-D:\CG_Final_Project\Simple3DViewer\src\main\java\com\cgvsu\Main.java
+D:\CG_Final_Project\Simple3DViewer\src\main\java\com\cgvsu\model\Scene.java
 D:\CG_Final_Project\Simple3DViewer\src\main\java\com\cgvsu\math\Vector4f.java
 D:\CG_Final_Project\Simple3DViewer\src\main\java\com\cgvsu\render_engine\AffineTransformations.java
 D:\CG_Final_Project\Simple3DViewer\src\main\java\com\cgvsu\math\Matrix4f.java

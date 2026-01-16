@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.cgvsu.VertexRemoverTest
--------------------------------------------------------------------------------
-Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.026 s - in com.cgvsu.VertexRemoverTest
