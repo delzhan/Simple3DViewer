@@ -15,6 +15,10 @@ import javafx.event.ActionEvent;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
@@ -44,6 +48,8 @@ public class GuiController {
 
     // Левая панель
     @FXML private ListView<String> modelListView;
+    @FXML private ColorPicker modelColorPicker;
+    @FXML private ColorPicker mashColorPicker;
 
     // Правая панель
     @FXML private ListView<String> cameraListView;
@@ -72,6 +78,17 @@ public class GuiController {
     private Timeline timeline;
     private ThemeManager themeManager;
 
+    private boolean isLeftButtonPressed = false;
+    private boolean isRightButtonPressed = false;
+    private boolean isCtrlPressed = false;
+    private double lastMouseX, lastMouseY;
+    private boolean wPressed = false;
+    private boolean aPressed = false;
+    private boolean sPressed = false;
+    private boolean dPressed = false;
+    private boolean spacePressed = false;
+    private boolean shiftPressed = false;
+
     @FXML
     public void initialize() {
         System.out.println("GuiController initialized");
@@ -80,6 +97,47 @@ public class GuiController {
 
         canvas.widthProperty().bind(canvasContainer.widthProperty());
         canvas.heightProperty().bind(canvasContainer.heightProperty());
+
+        // === ИНИЦИАЛИЗАЦИЯ КНОПОК РЕНДЕРИНГА ===
+        wireframeToggle.setSelected(true);
+        textureToggle.setSelected(false);
+        lightingToggle.setSelected(false);
+
+        // Устанавливаем начальные режимы рендеринга
+        RenderEngine.setWireframeMode(true);
+        RenderEngine.setTextureMode(false);
+        RenderEngine.setLightingMode(false);
+
+        // Подключаем обработчики кнопок
+        wireframeToggle.setOnAction(e -> {
+            boolean selected = wireframeToggle.isSelected();
+            RenderEngine.setWireframeMode(selected);
+            updateStatus("Wireframe mode: " + (selected ? "ON" : "OFF"));
+
+            // Если включаем каркас, выключаем текстуры
+            if (selected) {
+                textureToggle.setSelected(false);
+                RenderEngine.setTextureMode(false);
+            }
+        });
+
+        textureToggle.setOnAction(e -> {
+            boolean selected = textureToggle.isSelected();
+            RenderEngine.setTextureMode(selected);
+            updateStatus("Texture mode: " + (selected ? "ON" : "OFF"));
+
+            // Если включаем текстуры, выключаем каркас
+            if (selected) {
+                wireframeToggle.setSelected(false);
+                RenderEngine.setWireframeMode(false);
+            }
+        });
+
+        lightingToggle.setOnAction(e -> {
+            boolean selected = lightingToggle.isSelected();
+            RenderEngine.setLightingMode(selected);
+            updateStatus("Lighting mode: " + (selected ? "ON" : "OFF"));
+        });
 
         scaleXField.setText("1.0");
         scaleYField.setText("1.0");
@@ -111,9 +169,156 @@ public class GuiController {
 
         lightThemeItem.setSelected(true);
 
+        // Иниц. обработчиков мыши
+        canvas.setOnMousePressed(this::handleMousePressed);
+        canvas.setOnMouseReleased(this::handleMouseReleased);
+        canvas.setOnMouseDragged(this::handleMouseDragged);
+        canvas.setOnScroll(this::handleOnScroll);
+
+        // Иниц. обработчиков клавиатуры
+        canvas.setFocusTraversable(true);
+        canvas.setOnKeyPressed(this::handleKeyPressed);
+        canvas.setOnKeyReleased(this::handleKeyReleased);
+
+        // Инициализация ColorPicker
+        modelColorPicker.setOnAction(event -> {
+            Color newColor = modelColorPicker.getValue();
+            setColorToSelectedModels(newColor);
+        });
+
         startRendering();
 
         updateStatus();
+    }
+
+    //WASD
+    private void handleKeyPressed(KeyEvent event) {
+        switch (event.getCode()) {
+            case W -> wPressed = true;
+            case A -> aPressed = true;
+            case S -> sPressed = true;
+            case D -> dPressed = true;
+            case SPACE -> spacePressed = true;
+            case SHIFT -> shiftPressed = true;
+        }
+    }
+
+    private void handleKeyReleased(KeyEvent event) {
+        switch (event.getCode()) {
+            case W -> wPressed = false;
+            case A -> aPressed = false;
+            case S -> sPressed = false;
+            case D -> dPressed = false;
+            case SPACE -> spacePressed = false;
+            case SHIFT -> shiftPressed = false;
+        }
+    }
+
+    // мышь обработка
+    private void handleMousePressed(MouseEvent event) {
+        if (event.isPrimaryButtonDown()) {
+            isLeftButtonPressed = true;
+        }
+        if (event.isSecondaryButtonDown()) {
+            isRightButtonPressed = true;
+        }
+        lastMouseX = event.getX();
+        lastMouseY = event.getY();
+        isCtrlPressed = event.isControlDown();
+    }
+
+    private void handleMouseReleased(MouseEvent event) {
+        if (!event.isPrimaryButtonDown()) {
+            isLeftButtonPressed = false;
+        }
+        if (!event.isSecondaryButtonDown()) {
+            isRightButtonPressed = false;
+        }
+    }
+
+    private void handleMouseDragged(MouseEvent event) {
+        if (isLeftButtonPressed) {
+            double deltaX = event.getX() - lastMouseX;
+            double deltaY = event.getY() - lastMouseY;
+
+            if (!isCtrlPressed) {
+                panCamera(deltaX, deltaY);
+            }
+
+            lastMouseX = event.getX();
+            lastMouseY = event.getY();
+        }
+
+        if (isRightButtonPressed) {
+            double deltaX = event.getX() - lastMouseX;
+            double deltaY = event.getY() - lastMouseY;
+
+            rotateCamera(deltaX, deltaY);  // вращение камеры
+
+            lastMouseX = event.getX();
+            lastMouseY = event.getY();
+        }
+    }
+
+    private void handleOnScroll(ScrollEvent event) {
+        double delta = event.getDeltaY();
+        float zoomSensitivity = 0.1f;
+
+        // приближение/отдаление
+        com.cgvsu.render_engine.Camera camera = modelScene.getCamera();
+        float distance = camera.getDistance();
+        distance -= (float) (delta * zoomSensitivity);
+        distance = Math.max(10.0f, Math.min(1000.0f, distance));
+        camera.setDistance(distance);
+    }
+
+    //Мышь методы
+    private void panCamera(double deltaX, double deltaY) {
+        float panSensitivity = 0.05f;
+        com.cgvsu.render_engine.Camera camera = modelScene.getCamera();
+
+        Vector3f direction = camera.getTarget().sub(camera.getPosition());
+        direction.normalize();
+
+        Vector3f right = direction.cross(new Vector3f(0, 1, 0));
+        right.normalize();
+        right.multiply((float) deltaX * panSensitivity);
+
+        Vector3f up = new Vector3f(0, 1, 0);
+        up.multiply((float) deltaY * panSensitivity);
+
+        //перемещение цели камеры
+        camera.setTarget(camera.getTarget().add(right).add(up));
+    }
+
+    private void rotateCamera(double deltaX, double deltaY) {
+        float sensitivity = 0.5f;
+        com.cgvsu.render_engine.Camera camera = modelScene.getCamera();
+
+        float azimuth = camera.getAzimuth();
+        float elevation = camera.getElevation();
+
+        azimuth += (float) (deltaX * sensitivity);
+        elevation += (float) (deltaY * sensitivity);
+
+        elevation = Math.max(-87, Math.min(87, elevation));
+        azimuth = azimuth % 360;
+        if (azimuth < 0) azimuth += 360;
+
+        camera.setAzimuth(azimuth);
+        camera.setElevation(elevation);
+    }
+
+    // движ в реальном времени
+    private void updateCameraMovement() {
+        float speed = TRANSLATION * 0.5f; // Скорость движения
+
+        if (wPressed) modelScene.getCamera().movePosition(new Vector3f(0, 0, -speed));
+        if (sPressed) modelScene.getCamera().movePosition(new Vector3f(0, 0, speed));
+        if (aPressed) modelScene.getCamera().movePosition(new Vector3f(speed, 0, 0));
+        if (dPressed) modelScene.getCamera().movePosition(new Vector3f(-speed, 0, 0));
+        if (spacePressed) modelScene.getCamera().movePosition(new Vector3f(0, speed, 0));
+        if (shiftPressed) modelScene.getCamera().movePosition(new Vector3f(0, -speed, 0));
     }
 
     private void fixPanelsSize() {
@@ -133,6 +338,7 @@ public class GuiController {
         timeline.setCycleCount(Animation.INDEFINITE);
 
         KeyFrame frame = new KeyFrame(Duration.millis(16), event -> {
+            updateCameraMovement();
             double width = canvas.getWidth();
             double height = canvas.getHeight();
 
@@ -193,6 +399,20 @@ public class GuiController {
 
             ModelInstance instance = new ModelInstance(model);
             modelScene.addModelInstance(instance);
+
+            // Пытаемся загрузить текстуру (если есть файл с тем же именем .png или .jpg)
+            String modelPath = file.getAbsolutePath();
+            String baseName = modelPath.substring(0, modelPath.lastIndexOf('.'));
+
+            // Проверяем различные форматы текстур
+            String[] textureExtensions = {".png", ".jpg", ".jpeg", ".bmp"};
+            for (String ext : textureExtensions) {
+                File textureFile = new File(baseName + ext);
+                if (textureFile.exists()) {
+                    RenderEngine.loadTexture(model, textureFile.getAbsolutePath());
+                    break;
+                }
+            }
 
             updateModelList();
             int lastIndex = modelScene.getModelCount() - 1;
@@ -331,6 +551,9 @@ public class GuiController {
         for (int index : modelListView.getSelectionModel().getSelectedIndices()) {
             modelScene.addToSelection(index);
         }
+
+        updateModelSelectionVisuals();
+
         updateStatus("Selected " + modelScene.getSelectedIndices().size() + " model(s)");
     }
 
@@ -423,6 +646,10 @@ public class GuiController {
         updateStatus("Remove polygon - not implemented yet");
     }
 
+    @FXML
+    private ColorPicker meshColorPicker;
+
+
     // === Правая панель - Управление камерой ===
 
     @FXML
@@ -477,6 +704,38 @@ public class GuiController {
         updateStatus("Render mode changed to: " + mode);
     }
 
+    // === Правая панель - Управление освещением ===
+
+    @FXML
+    public void onLoadTextureClick(ActionEvent event) {
+        Set<Integer> selectedIndices = modelScene.getSelectedIndices();
+        if (selectedIndices.isEmpty()) {
+            showError("No model selected", "Please select a model to load texture");
+            return;
+        }
+
+        int modelIndex = selectedIndices.iterator().next();
+        Model model = modelScene.getModelInstance(modelIndex).getModel();
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("Image files", "*.png", "*.jpg", "*.jpeg", "*.bmp")
+        );
+        fileChooser.setTitle("Load Texture");
+
+        File file = fileChooser.showOpenDialog((Stage) canvas.getScene().getWindow());
+        if (file != null) {
+            RenderEngine.loadTexture(model, file.getAbsolutePath());
+            updateStatus("Texture loaded: " + file.getName());
+
+            // Включаем режим текстур
+            textureToggle.setSelected(true);
+            RenderEngine.setTextureMode(true);
+            wireframeToggle.setSelected(false);
+            RenderEngine.setWireframeMode(false);
+        }
+    }
+
     // === Правая панель - Трансформации ===
 
     @FXML
@@ -493,6 +752,9 @@ public class GuiController {
             }
 
             updateStatus("Scale applied: X=" + scaleX + ", Y=" + scaleY + ", Z=" + scaleZ);
+
+            triggerRender();
+
         } catch (NumberFormatException e) {
             showError("Invalid scale values", "Please enter valid numbers");
         }
@@ -512,6 +774,9 @@ public class GuiController {
             }
 
             updateStatus("Rotation applied: X=" + rotateX + "°, Y=" + rotateY + "°, Z=" + rotateZ + "°");
+
+            triggerRender();
+
         } catch (NumberFormatException e) {
             showError("Invalid rotation values", "Please enter valid numbers");
         }
@@ -531,6 +796,9 @@ public class GuiController {
             }
 
             updateStatus("Translation applied: X=" + translateX + ", Y=" + translateY + ", Z=" + translateZ);
+
+            triggerRender();
+
         } catch (NumberFormatException e) {
             showError("Invalid translation values", "Please enter valid numbers");
         }
@@ -551,6 +819,23 @@ public class GuiController {
         translateZField.setText("0");
 
         updateStatus("Transformations reset");
+
+        triggerRender();
+    }
+
+    private void triggerRender() {
+        renderImmediately();
+    }
+
+    private void renderImmediately() {
+        double width = canvas.getWidth();
+        double height = canvas.getHeight();
+
+        if (width > 0 && height > 0) {
+            canvas.getGraphicsContext2D().clearRect(0, 0, width, height);
+            modelScene.getCamera().setAspectRatio((float) (width / height));
+            RenderEngine.renderScene(canvas.getGraphicsContext2D(), modelScene, (int) width, (int) height);
+        }
     }
 
     // === Вспомогательные методы ===
@@ -578,5 +863,60 @@ public class GuiController {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    private void setColorToSelectedModels(Color color) {
+        Set<Integer> selectedIndices = modelScene.getSelectedIndices();
+
+        if (selectedIndices.isEmpty()) {
+            updateStatus("Нет выделенных моделей для изменения цвета");
+            return;
+        }
+
+        // Применяем цвет ко всем выделенным моделям
+        for (Integer index : selectedIndices) {
+            ModelInstance instance = modelScene.getModelInstance(index);
+            if (instance != null) {
+                instance.setModelColor(color);
+            }
+        }
+
+        renderImmediately();
+        updateStatus("Цвет изменен для " + selectedIndices.size() + " модели(ей)");
+    }
+
+    private void updateModelSelectionVisuals() {
+        Set<Integer> selectedIndices = modelScene.getSelectedIndices();
+
+        // 1. Все невыделенные модели делаем белыми
+        for (int i = 0; i < modelScene.getModelCount(); i++) {
+            if (!selectedIndices.contains(i)) {
+                ModelInstance instance = modelScene.getModelInstance(i);
+                if (instance != null) {
+                    instance.setModelColor(Color.WHITE);
+                }
+            }
+        }
+
+        // 2. Для выделенных моделей:
+        //    - Если цвет белый (новое выделение) - делаем красным
+        //    - Если цвет уже другой (пользовательский) - оставляем как есть
+        for (Integer index : selectedIndices) {
+            ModelInstance instance = modelScene.getModelInstance(index);
+            if (instance != null) {
+                // Если модель белая (только что выделили), делаем красной
+                if (instance.getModelColor().equals(Color.WHITE)) {
+                    instance.setModelColor(Color.RED);
+                }
+            }
+        }
+
+        // 3. Обновляем ColorPicker цветом первой выделенной модели
+        if (!selectedIndices.isEmpty() && modelColorPicker != null) {
+            ModelInstance firstSelected = modelScene.getModelInstance(selectedIndices.iterator().next());
+            modelColorPicker.setValue(firstSelected.getModelColor());
+        }
+
+        renderImmediately();
     }
 }

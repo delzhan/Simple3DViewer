@@ -2,6 +2,7 @@
 
 <?import javafx.scene.canvas.Canvas?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ColorPicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.Menu?>
@@ -73,6 +74,11 @@
                 <Button fx:id="removeVertexBtn" onAction="#onRemoveVertexClick" prefHeight="25.0" prefWidth="126.0" text="Удалить вершину" />
                 <Button fx:id="removePolygonBtn" onAction="#onRemovePolygonClick" prefHeight="25.0" prefWidth="125.0" text="Удалить полигон" />
             </HBox>
+         <Separator prefWidth="200.0" />
+         <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="17.0" prefWidth="251.0" text="Цвет модели" />
+         <ColorPicker fx:id="modelColorPicker" prefHeight="25.0" prefWidth="251.0" />
+         <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="17.0" prefWidth="260.0" text="Цвет сетки" />
+         <ColorPicker fx:id="meshColorPicker" prefHeight="25.0" prefWidth="254.0" />
         </VBox>
     </left>
 

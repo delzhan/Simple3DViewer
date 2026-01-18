@@ -1,11 +1,12 @@
 package com.cgvsu.model;
 
-import com.cgvsu.model.Model;
 import com.cgvsu.render_engine.TransformationParameters;
+import javafx.scene.paint.Color;
 
 public class ModelInstance {
     private Model model;
     private TransformationParameters transformationParams;
+    private Color modelColor;
 
     public ModelInstance(Model model) {
         this.model = model;
@@ -14,6 +15,8 @@ public class ModelInstance {
         transformationParams.setScaleX(1.0);
         transformationParams.setScaleY(1.0);
         transformationParams.setScaleZ(1.0);
+        // Цвет по умолчанию - белый
+        this.modelColor = Color.WHITE;
     }
 
     public Model getModel() {
@@ -32,6 +35,14 @@ public class ModelInstance {
         this.transformationParams = params;
     }
 
+    public Color getModelColor() {
+        return modelColor;
+    }
+
+    public void setModelColor(Color modelColor) {
+        this.modelColor = modelColor;
+    }
+
     // Методы трансформаций
     public void rotateX(double angle) {
         transformationParams.setAlpha(transformationParams.getAlpha() + angle);
@@ -46,7 +57,6 @@ public class ModelInstance {
     }
 
     public void scale(double factor) {
-        // Масштабируем по всем осям одинаково
         transformationParams.setScaleX(transformationParams.getScaleX() * factor);
         transformationParams.setScaleY(transformationParams.getScaleY() * factor);
         transformationParams.setScaleZ(transformationParams.getScaleZ() * factor);
