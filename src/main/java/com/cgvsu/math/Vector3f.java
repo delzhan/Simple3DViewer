@@ -125,7 +125,6 @@ public class Vector3f extends AbstractVector {
         super.subV(other);
     }
 
-    // Этот метод не переопределяет метод из AbstractVector, поэтому убираем @Override
     public void sub(AbstractVector first, AbstractVector second) {
         // Реализация метода sub с двумя параметрами
         if (first == null || second == null) {

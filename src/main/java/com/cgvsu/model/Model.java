@@ -41,4 +41,5 @@ public class Model {
     public void setPolygons(ArrayList<Polygon> polygons) {
         this.polygons = polygons;
     }
+
 }

@@ -25,6 +25,10 @@ public class RenderWindow extends JFrame {
     private JCheckBox lightingCheckBox;
     private JButton colorButton;
 
+    private Rasterizer.Vertex createVertex(float x, float y, float z, int color) {
+        return new Rasterizer.Vertex(x, y, z, color);
+    }
+
     public RenderWindow(TriangulatedModel model) {
         this.model = model;
         rasterizer = new Rasterizer(800, 600);
@@ -32,7 +36,6 @@ public class RenderWindow extends JFrame {
 
         repaintTimer = new Timer(100, e -> renderPanel.repaint());
         repaintTimer.start();
-
 
         setTitle("3D Model Viewer");
         setSize(800, 600);
@@ -102,7 +105,7 @@ public class RenderWindow extends JFrame {
                 JFileChooser fileChooser = new JFileChooser();
                 if (fileChooser.showOpenDialog(RenderWindow.this) == JFileChooser.APPROVE_OPTION) {
                     try {
-                        texture = new TextureShader(fileChooser.getSelectedFile().getPath());
+                        texture.setTexture(fileChooser.getSelectedFile().getPath());
                         useTexture = true;
                         textureCheckBox.setSelected(true);
                         renderPanel.repaint();
@@ -126,9 +129,9 @@ public class RenderWindow extends JFrame {
         for (Polygon polygon : model.getPolygons()) {
             if (polygon.getVertexIndices().size() < 3) continue;
 
-            Vertex v0 = transformVertex(polygon, 0);
-            Vertex v1 = transformVertex(polygon, 1);
-            Vertex v2 = transformVertex(polygon, 2);
+            Rasterizer.Vertex v0 = transformVertex(polygon, 0);
+            Rasterizer.Vertex v1 = transformVertex(polygon, 1);
+            Rasterizer.Vertex v2 = transformVertex(polygon, 2);
 
             rasterizer.rasterizeTriangle(v0, v1, v2);
 
@@ -138,18 +141,19 @@ public class RenderWindow extends JFrame {
         }
     }
 
-    private Vertex transformVertex(Polygon polygon, int vertexIndex) {
+    private Rasterizer.Vertex transformVertex(Polygon polygon, int vertexIndex) {
         if (vertexIndex >= polygon.getVertexIndices().size()) {
-            return new Vertex(0, 0, 0, Color.BLACK.getRGB());
+            return createVertex(0, 0, 0, Color.BLACK.getRGB());
         }
 
         int vertexIdx = polygon.getVertexIndices().get(vertexIndex);
 
         float x = 0, y = 0, z = 0;
-        if (model.getVertices() != null && vertexIdx * 3 + 2 < model.getVertices().size()) {
-            x = model.getVertices().get(vertexIdx * 3);
-            y = model.getVertices().get(vertexIdx * 3 + 1);
-            z = model.getVertices().get(vertexIdx * 3 + 2);
+        if (model.getVertices() != null && vertexIdx < model.getVertices().size()) {
+            Vector3f vertex = model.getVertices().get(vertexIdx);
+            x = vertex.getX();
+            y = vertex.getY();
+            z = vertex.getZ();
         }
 
         // Исправляем преобразование координат для лучшего отображения
@@ -158,14 +162,14 @@ public class RenderWindow extends JFrame {
         float screenZ = z;
 
         // Для отладки: используем фиксированный цвет
-        int color = Color.RED.getRGB();
+        int color = staticColor.getRGB();
 
         // Простое затенение для теста
         if (useLighting) {
             Vector3f lightDir = new Vector3f(0, 0, -1);
             float nx = 0, ny = 0, nz = 1;  // Простая нормаль
             Vector3f normal = new Vector3f(nx, ny, nz);
-            normal.normalizeV();
+            normal = normal.normalizeV();
             float dot = Math.max(normal.dot(lightDir), 0.2f);  // Минимальная яркость 0.2
 
             int r = (int) (Color.RED.getRed() * dot);
@@ -174,25 +178,13 @@ public class RenderWindow extends JFrame {
             color = new Color(r, g, b).getRGB();
         }
 
-        return new Vertex(screenX, screenY, screenZ, color);
+        return createVertex(screenX, screenY, screenZ, color);
     }
 
-    private void drawWireframeTriangle(Vertex v0, Vertex v1, Vertex v2) {
-        rasterizer.drawLineBresenham(
-                new float[]{v0.x, v0.y},
-                new float[]{v1.x, v1.y},
-                Color.BLACK
-        );
-        rasterizer.drawLineBresenham(
-                new float[]{v1.x, v1.y},
-                new float[]{v2.x, v2.y},
-                Color.BLACK
-        );
-        rasterizer.drawLineBresenham(
-                new float[]{v2.x, v2.y},
-                new float[]{v0.x, v0.y},
-                Color.BLACK
-        );
+    private void drawWireframeTriangle(Rasterizer.Vertex v0, Rasterizer.Vertex v1, Rasterizer.Vertex v2) {
+        rasterizer.drawLineBresenham(v0, v1, Color.BLACK.getRGB());
+        rasterizer.drawLineBresenham(v1, v2, Color.BLACK.getRGB());
+        rasterizer.drawLineBresenham(v2, v0, Color.BLACK.getRGB());
     }
 
     @Override

@@ -15,9 +15,6 @@ public class Camera {
     private float elevation = 0.0f;   // Склонение (вертикальный угол)
     private float distance = 100.0f; // Расстояние от камеры до цели
 
-
-
-
     public Camera(
             final Vector3f position,
             final Vector3f target,

@@ -16,25 +16,20 @@ import java.util.Map;
 
 public class RenderEngine {
 
-    // === Флаги режимов рендеринга ===
     private static boolean wireframeMode = true;
     private static boolean textureMode = false;
     private static boolean lightingMode = false;
 
-    // Текстуры моделей (путь к файлу -> Image)
     private static Map<Model, Image> modelTextures = new HashMap<>();
 
-    // Настройки освещения
     private static Vector3f lightDirection = new Vector3f(0, 1, 1);
     private static float ambientIntensity = 0.3f;
     private static float diffuseIntensity = 0.7f;
 
     static {
-        // Нормализуем направление света (из первой версии)
         lightDirection = lightDirection.normalizeV();
     }
 
-    // === Методы для управления режимами ===
     public static void setWireframeMode(boolean enabled) {
         wireframeMode = enabled;
         System.out.println("Wireframe mode: " + (enabled ? "ON" : "OFF"));
@@ -50,7 +45,7 @@ public class RenderEngine {
         System.out.println("Lighting mode: " + (enabled ? "ON" : "OFF"));
     }
 
-    // Метод для загрузки текстуры
+    // Загрузка текстуры
     public static void loadTexture(Model model, String texturePath) {
         try {
             Image texture = new Image("file:" + texturePath);
@@ -62,54 +57,6 @@ public class RenderEngine {
         }
     }
 
-    // Старый метод render (оставлен для совместимости)
-    public static void render(
-            final GraphicsContext graphicsContext,
-            final Camera camera,
-            final Model mesh,
-            final int width,
-            final int height) {
-        Matrix4f modelMatrix = new Matrix4f(1);
-        Matrix4f viewMatrix = camera.getViewMatrix();
-        Matrix4f projectionMatrix = camera.getProjectionMatrix();
-
-        Matrix4f modelViewProjectionMatrix = new Matrix4f(modelMatrix);
-        modelViewProjectionMatrix.multiply(viewMatrix);
-        modelViewProjectionMatrix.multiply(projectionMatrix);
-
-        final int nPolygons = mesh.getPolygons().size();
-        for (int polygonInd = 0; polygonInd < nPolygons; ++polygonInd) {
-            final int nVerticesInPolygon = mesh.getPolygons().get(polygonInd).getVertexIndices().size();
-
-            ArrayList<Vector2f> resultPoints = new ArrayList<>();
-            for (int vertexInPolygonInd = 0; vertexInPolygonInd < nVerticesInPolygon; ++vertexInPolygonInd) {
-                int vertexIndex = mesh.getPolygons().get(polygonInd).getVertexIndices().get(vertexInPolygonInd);
-                Vector3f vertex = mesh.getVertices().get(vertexIndex - 1);
-
-                Vector3f transformedVertex = multiplyMatrix4ByVector3(modelViewProjectionMatrix, vertex);
-                Vector2f resultPoint = GraphicConveyor.vertexToPoint(transformedVertex, width, height);
-                resultPoints.add(resultPoint);
-            }
-
-            for (int vertexInPolygonInd = 1; vertexInPolygonInd < nVerticesInPolygon; ++vertexInPolygonInd) {
-                graphicsContext.strokeLine(
-                        resultPoints.get(vertexInPolygonInd - 1).getX(),
-                        resultPoints.get(vertexInPolygonInd - 1).getY(),
-                        resultPoints.get(vertexInPolygonInd).getX(),
-                        resultPoints.get(vertexInPolygonInd).getY());
-            }
-
-            if (nVerticesInPolygon > 0) {
-                graphicsContext.strokeLine(
-                        resultPoints.get(nVerticesInPolygon - 1).getX(),
-                        resultPoints.get(nVerticesInPolygon - 1).getY(),
-                        resultPoints.get(0).getX(),
-                        resultPoints.get(0).getY());
-            }
-        }
-    }
-
-    // Основной метод рендеринга сцены
     public static void renderScene(
             final GraphicsContext graphicsContext,
             final Scene scene,
@@ -127,7 +74,7 @@ public class RenderEngine {
             Model model = modelInstance.getModel();
             Camera camera = scene.getCamera();
 
-            // Получаем цвет из модели (из второй версии)
+            // Получаем цвет из модели
             Color renderColor = modelInstance.getModelColor();
             boolean isSelected = scene.isModelSelected(i);
 
@@ -137,21 +84,18 @@ public class RenderEngine {
             // Получаем текстуру для модели (если есть)
             Image texture = modelTextures.get(model);
 
-            // Рендерим модель в зависимости от режима
+            // Рендерим модель
             if (wireframeMode) {
-                // Каркасный режим - используем цвет из модели
                 renderWireframe(graphicsContext, camera, model, modelMatrix, renderColor, isSelected, width, height);
             } else if (textureMode && texture != null) {
-                // Текстурированный режим - используем цвет из модели
                 renderTextured(graphicsContext, camera, model, modelMatrix, texture, renderColor, isSelected, width, height);
             } else {
-                // Сплошная заливка с освещением - используем улучшенный метод из первой версии
                 renderSolid(graphicsContext, camera, model, modelMatrix, renderColor, isSelected, width, height);
             }
         }
     }
 
-    // Метод для рендеринга каркаса (с поддержкой цвета модели)
+    // Рендеринг каркаса с поддержкой цвета
     private static void renderWireframe(
             final GraphicsContext graphicsContext,
             final Camera camera,
@@ -205,7 +149,7 @@ public class RenderEngine {
         }
     }
 
-    // Метод для рендеринга с текстурами
+    // Рендеринг с текстурами
     private static void renderTextured(
             final GraphicsContext graphicsContext,
             final Camera camera,
@@ -276,7 +220,7 @@ public class RenderEngine {
         }
     }
 
-    // Улучшенный метод для рендеринга с освещением (из первой версии)
+    // Рендеринг с освещением
     private static void renderSolid(
             final GraphicsContext graphicsContext,
             final Camera camera,
@@ -292,13 +236,13 @@ public class RenderEngine {
         Matrix4f modelViewMatrix = multiplyMatrices(modelMatrix, viewMatrix);
         Matrix4f modelViewProjectionMatrix = multiplyMatrices(modelViewMatrix, projectionMatrix);
 
-        // Преобразуем направление света в пространство камеры (из первой версии)
+        // Преобразуем направление света в пространство камеры
         Vector3f lightDirInCameraSpace = transformDirection(modelViewMatrix, lightDirection);
         lightDirInCameraSpace = lightDirInCameraSpace.normalizeV();
 
         final int nPolygons = mesh.getPolygons().size();
         for (int polygonInd = 0; polygonInd < nPolygons; ++polygonInd) {
-            // Триангулируем полигон (разбиваем на треугольники) - из первой версии
+            // Триангулируем полигон
             ArrayList<Triangle> triangles = triangulatePolygon(mesh, polygonInd);
 
             for (Triangle triangle : triangles) {
@@ -366,9 +310,6 @@ public class RenderEngine {
         }
     }
 
-    // === Вспомогательные методы из первой версии ===
-
-    // Метод для триангуляции полигонов (из первой версии)
     private static ArrayList<Triangle> triangulatePolygon(Model mesh, int polygonIndex) {
         ArrayList<Triangle> triangles = new ArrayList<>();
 
@@ -398,7 +339,6 @@ public class RenderEngine {
         return triangles;
     }
 
-    // Вспомогательный класс для треугольника
     private static class Triangle {
         Vector3f[] vertices;
 
@@ -410,7 +350,7 @@ public class RenderEngine {
         }
     }
 
-    // Метод для преобразования направления
+    // Преобразование направления
     private static Vector3f transformDirection(Matrix4f matrix, Vector3f direction) {
         float[][] m = matrix.getElements();
         float x = direction.getX();
@@ -514,6 +454,52 @@ public class RenderEngine {
 
         return new Vector3f(resultX, resultY, resultZ);
     }
+// Старый метод render (оставлен для совместимости)
+//    public static void render(
+//            final GraphicsContext graphicsContext,
+//            final Camera camera,
+//            final Model mesh,
+//            final int width,
+//            final int height) {
+//        Matrix4f modelMatrix = new Matrix4f(1);
+//        Matrix4f viewMatrix = camera.getViewMatrix();
+//        Matrix4f projectionMatrix = camera.getProjectionMatrix();
+//
+//        Matrix4f modelViewProjectionMatrix = new Matrix4f(modelMatrix);
+//        modelViewProjectionMatrix.multiply(viewMatrix);
+//        modelViewProjectionMatrix.multiply(projectionMatrix);
+//
+//        final int nPolygons = mesh.getPolygons().size();
+//        for (int polygonInd = 0; polygonInd < nPolygons; ++polygonInd) {
+//            final int nVerticesInPolygon = mesh.getPolygons().get(polygonInd).getVertexIndices().size();
+//
+//            ArrayList<Vector2f> resultPoints = new ArrayList<>();
+//            for (int vertexInPolygonInd = 0; vertexInPolygonInd < nVerticesInPolygon; ++vertexInPolygonInd) {
+//                int vertexIndex = mesh.getPolygons().get(polygonInd).getVertexIndices().get(vertexInPolygonInd);
+//                Vector3f vertex = mesh.getVertices().get(vertexIndex - 1);
+//
+//                Vector3f transformedVertex = multiplyMatrix4ByVector3(modelViewProjectionMatrix, vertex);
+//                Vector2f resultPoint = GraphicConveyor.vertexToPoint(transformedVertex, width, height);
+//                resultPoints.add(resultPoint);
+//            }
+//
+//            for (int vertexInPolygonInd = 1; vertexInPolygonInd < nVerticesInPolygon; ++vertexInPolygonInd) {
+//                graphicsContext.strokeLine(
+//                        resultPoints.get(vertexInPolygonInd - 1).getX(),
+//                        resultPoints.get(vertexInPolygonInd - 1).getY(),
+//                        resultPoints.get(vertexInPolygonInd).getX(),
+//                        resultPoints.get(vertexInPolygonInd).getY());
+//            }
+//
+//            if (nVerticesInPolygon > 0) {
+//                graphicsContext.strokeLine(
+//                        resultPoints.get(nVerticesInPolygon - 1).getX(),
+//                        resultPoints.get(nVerticesInPolygon - 1).getY(),
+//                        resultPoints.get(0).getX(),
+//                        resultPoints.get(0).getY());
+//            }
+//        }
+//    }
 
 //    private static void renderModelWithTransformations(
 //            final GraphicsContext graphicsContext,

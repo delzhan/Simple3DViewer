@@ -7,8 +7,7 @@ import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 
 /**
- * Класс для аффинных преобразований (перемещение, вращение, масштабирование)
- * Я едва понимаю,  что именно творю, без осуждения. оно живое и уже хорошо.
+ * Класс для аффинных преобразований (перемещение, вращение, масштабирование).
  */
 public class AffineTransformations {
 
@@ -83,8 +82,7 @@ public class AffineTransformations {
         float y = axis.getY();
         float z = axis.getZ();
 
-        // фрмула Родригеса для вращения вокруг произвольной оси
-        //я почти перестаю понимать, что я творю, но работает - не трогай
+        // Формула Родригеса для вращения вокруг произвольной оси
         return new Matrix4f(
                 cosA + x*x*oneMinusCosA,     x*y*oneMinusCosA - z*sinA, x*z*oneMinusCosA + y*sinA, 0,
                 y*x*oneMinusCosA + z*sinA,   cosA + y*y*oneMinusCosA,   y*z*oneMinusCosA - x*sinA, 0,

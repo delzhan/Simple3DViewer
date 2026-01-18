@@ -85,7 +85,7 @@ public class VertexRemover {
 
         // Нормализуем суммы, чтобы получить итоговые нормали вершин, и добавляем в модель
         for (Vector3f sum : vertexNormalSums) {
-            model.getNormals().add(sum.normalizeV());  // Было: normalized()
+            model.getNormals().add(sum.normalizeV());
         }
 
         // Обновляем индексы нормалей в полигонах (теперь они 1:1 с вершинами)

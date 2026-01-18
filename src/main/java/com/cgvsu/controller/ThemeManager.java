@@ -11,20 +11,10 @@ public class ThemeManager {
     private Theme currentTheme;
 
     public ThemeManager() {
-        // Регистрируем темы
         themes.put(Theme.LIGHT, "/css/light.css");
         themes.put(Theme.DARK, "/css/dark.css");
 
-        // Светлая тема по умолчанию
         currentTheme = Theme.LIGHT;
-    }
-
-    public Theme getCurrentTheme() {
-        return currentTheme;
-    }
-
-    public List<Theme> getAvailableThemes() {
-        return new ArrayList<>(themes.keySet());
     }
 
     public void applyTheme(Scene scene) {
@@ -38,12 +28,10 @@ public class ThemeManager {
 
         String url = resourceUrl.toExternalForm();
 
-        // Полностью очищаем все старые стили
         scene.getStylesheets().clear();
-        // Добавляем новую тему
         scene.getStylesheets().add(url);
 
-        // 🔧 Важное дополнение: принудительный перерасчет макета
+        // принудительный перерасчет макета
         Platform.runLater(() -> {
             Parent root = scene.getRoot();
             if (root != null) {

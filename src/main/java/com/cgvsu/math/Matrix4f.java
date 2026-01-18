@@ -107,7 +107,6 @@ public class Matrix4f extends AbstractMatrix {
     }
 
 
-   //пожить, пожить
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
@@ -123,7 +122,7 @@ public class Matrix4f extends AbstractMatrix {
         return true;
     }
 
-    // Геттер для элементов матрицы? нужен ли он тут я вообще хз, пусть буде
+    // Геттер для элементов матрицы
     public float[][] getElements() {
         return elements;
     }

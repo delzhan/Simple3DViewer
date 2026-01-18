@@ -50,7 +50,7 @@ public abstract class AbstractMatrix {
         this.elements = new float[getSize()][getSize()];
     }
 
-    // Абстрактные методы, я скоро уже с ума сойду
+    // Абстрактные методы
 
     protected abstract int getSize();
     protected abstract AbstractMatrix createInstance(float[] elements);

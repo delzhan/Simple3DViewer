@@ -11,11 +11,9 @@ public class ModelInstance {
     public ModelInstance(Model model) {
         this.model = model;
         this.transformationParams = new TransformationParameters();
-        // Инициализируем значения по умолчанию
         transformationParams.setScaleX(1.0);
         transformationParams.setScaleY(1.0);
         transformationParams.setScaleZ(1.0);
-        // Цвет по умолчанию - белый
         this.modelColor = Color.WHITE;
     }
 

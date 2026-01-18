@@ -111,7 +111,12 @@ public class Rasterizer {
         int y0 = (int) start[1];
         int x1 = (int) end[0];
         int y1 = (int) end[1];
+        drawLineBresenham(x0, y0, x1, y1, color.getRGB());
+    }
 
+    // НОВЫЕ МЕТОДЫ ДЛЯ РАБОТЫ С RenderWindow
+
+    public void drawLineBresenham(int x0, int y0, int x1, int y1, int color) {
         int dx = Math.abs(x1 - x0);
         int dy = Math.abs(y1 - y0);
         int sx = x0 < x1 ? 1 : -1;
@@ -120,7 +125,7 @@ public class Rasterizer {
 
         while (true) {
             if (x0 >= 0 && x0 < width && y0 >= 0 && y0 < height) {
-                colorBuffer[y0][x0] = color.getRGB();
+                colorBuffer[y0][x0] = color;
             }
 
             if (x0 == x1 && y0 == y1) break;
@@ -137,11 +142,47 @@ public class Rasterizer {
         }
     }
 
+    // == Метод для отрисовки линии между двумя точками ==
+    public void drawLineBresenham(float x0, float y0, float x1, float y1, int color) {
+        drawLineBresenham((int)x0, (int)y0, (int)x1, (int)y1, color);
+    }
+
+
+    // == Метод для отрисовки линии между двумя точками ==
+    public void drawLineBresenham(float x0, float y0, float x1, float y1, Color color) {
+        drawLineBresenham((int)x0, (int)y0, (int)x1, (int)y1, color.getRGB());
+    }
+
+    // == Метод для отрисовки линии между двумя точками (Vertex, цвет как int) ==
+    public void drawLineBresenham(Vertex v0, Vertex v1, int color) {
+        drawLineBresenham(v0.x, v0.y, v1.x, v1.y, color);
+    }
+
+
+    // == Метод для отрисовки линии между двумя точками ==
+
+    public void drawLineBresenham(Vertex v0, Vertex v1, Color color) {
+        drawLineBresenham(v0.x, v0.y, v1.x, v1.y, color.getRGB());
+    }
+
     public int getWidth() {
         return width;
     }
 
     public int getHeight() {
         return height;
+    }
+
+    // Вспомогательный класс Vertex (нужен для RenderWindow)
+    public static class Vertex {
+        public float x, y, z;
+        public int color;
+
+        public Vertex(float x, float y, float z, int color) {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.color = color;
+        }
     }
 }

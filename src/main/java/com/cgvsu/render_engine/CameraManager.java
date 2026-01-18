@@ -6,11 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/** Катя, обрати внимание, я УЖЕ реализовала несколько камер
- * За тобой - все остальноет по твоей программе!!! <- Ты угрожаешь???
- *
- */
-
 public class CameraManager {
     private Map<Integer, Camera> cameras;
     private int activeCamera;
@@ -20,7 +15,6 @@ public class CameraManager {
         cameras = new HashMap<>();
         nextCameraId = 0;
 
-        // Initialize with default camera
         Camera defaultCamera = new Camera(
                 new Vector3f(0, 0, 100),
                 new Vector3f(0, 0, 0),

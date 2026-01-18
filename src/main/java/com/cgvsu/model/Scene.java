@@ -25,11 +25,7 @@ public class Scene {
         this.backgroundColor = new Vector3f(0.2f, 0.2f, 0.2f);
     }
 
-    // === Методы для управления выбором ===
-
-    /**
-     * Выбирает одну модель (снимает предыдущий выбор)
-     */
+    // Выбирает одну модель (снимает предыдущий выбор)
     public void selectModel(int index) {
         if (index >= 0 && index < modelInstances.size()) {
             selectedModelIndices.clear();
@@ -37,32 +33,24 @@ public class Scene {
         }
     }
 
-    /**
-     * Добавляет модель к выбору (множественный выбор)
-     */
+    // Добавляет модель к выбору (множественный выбор)
     public void addToSelection(int index) {
         if (index >= 0 && index < modelInstances.size()) {
             selectedModelIndices.add(index);
         }
     }
 
-    /**
-     * Снимает выделение с модели
-     */
+    // Снимает выделение с модели
     public void removeFromSelection(int index) {
         selectedModelIndices.remove(index);
     }
 
-    /**
-     * Очищает весь выбор
-     */
+    // Очищает весь выбор
     public void clearSelection() {
         selectedModelIndices.clear();
     }
 
-    /**
-     * Переключает выбор модели
-     */
+    // Переключает выбор модели
     public void toggleSelection(int index) {
         if (selectedModelIndices.contains(index)) {
             removeFromSelection(index);
@@ -71,9 +59,7 @@ public class Scene {
         }
     }
 
-    /**
-     * Выбирает все модели
-     */
+    // Выбирает все модели
     public void selectAll() {
         selectedModelIndices.clear();
         for (int i = 0; i < modelInstances.size(); i++) {
@@ -81,9 +67,7 @@ public class Scene {
         }
     }
 
-    /**
-     * Получает список выбранных моделей
-     */
+    // Получает список выбранных моделей
     public List<ModelInstance> getSelectedModelInstances() {
         List<ModelInstance> selected = new ArrayList<>();
         for (int index : selectedModelIndices) {
@@ -94,9 +78,7 @@ public class Scene {
         return selected;
     }
 
-    /**
-     * Получает первую выбранную модель (для удобства)
-     */
+    // Получает первую выбранную модель (для удобства)
     public ModelInstance getFirstSelectedModelInstance() {
         if (!selectedModelIndices.isEmpty()) {
             int firstIndex = selectedModelIndices.iterator().next();
@@ -113,12 +95,6 @@ public class Scene {
         return selectedModelIndices.contains(index);
     }
 
-    public boolean hasSelection() {
-        return !selectedModelIndices.isEmpty();
-    }
-
-    // === Методы для управления моделями ===
-
     public void addModelInstance(ModelInstance modelInstance) {
         modelInstances.add(modelInstance);
         // При добавлении новой модели автоматически выбираем её
@@ -127,7 +103,6 @@ public class Scene {
 
     public void removeModelInstance(int index) {
         if (index >= 0 && index < modelInstances.size()) {
-            // Удаляем индекс из выбора
             selectedModelIndices.remove(index);
             // Смещаем остальные индексы в выборе
             Set<Integer> newSelection = new HashSet<>();
@@ -154,8 +129,6 @@ public class Scene {
         }
         selectedModelIndices.clear();
     }
-
-    // === Применение трансформаций к выбранным моделям ===
 
     public void rotateSelectedX(double angle) {
         for (ModelInstance instance : getSelectedModelInstances()) {
@@ -205,8 +178,6 @@ public class Scene {
         }
     }
 
-    // === Остальные методы (остаются как были) ===
-
     public List<ModelInstance> getModelInstances() {
         return modelInstances;
     }
@@ -232,10 +203,6 @@ public class Scene {
 
     public Vector3f getBackgroundColor() {
         return backgroundColor;
-    }
-
-    public void setBackgroundColor(Vector3f color) {
-        this.backgroundColor = color;
     }
 
     public void clear() {

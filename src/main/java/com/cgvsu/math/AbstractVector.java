@@ -159,8 +159,6 @@ public abstract class AbstractVector {
 
     /**
      * Нормализует вектор, НО. При этом изменяет состояние текущего вектора
-     * Полетит не все, но все еще полетит, лучше погядите на следщй метод, он то же самое, только в профиль
-     * ну и без полетов(предварительно)
      * Если длина вектора равна нулю, метод ничего не делает
      */
     public void normalize() {
@@ -169,7 +167,6 @@ public abstract class AbstractVector {
     /**
      * Нормализует вектор.
      * Новый вектор. Благодаря этому можно играться с векторами: vector = vector1.add(vector2).normalizeV()
-     * предвариллоьно!!! должно быть живо. надеюсь
      * Если длина вектора равна нулю, метод ничего не делает.
      */
     public AbstractVector normalizeV() {
@@ -219,8 +216,7 @@ public abstract class AbstractVector {
     /**
      * Проверка, что нам скармливают одинаковые вектора. Пусть будет, на всякий, в случае чего - не используйте
      */
-    // ^ Настя, кого ты там накормить хочешь?
-    // |
+
     private void equalsLength(AbstractVector other) {
         if (this.components.length != other.components.length) {
             throw new IndexOutOfBoundsException("Разная длина");

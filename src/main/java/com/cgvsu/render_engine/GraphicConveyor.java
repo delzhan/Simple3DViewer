@@ -12,7 +12,6 @@ public class GraphicConveyor {
 
     /**
      * Аффинные преобразования.
-     * Пока я пыталась моздать все это, я поседела.
      */
     public static Matrix4f scaleRotateTranslate(Vector3f rotate, Vector3f scale, Vector3f translate) {
         Matrix4f t = AffineTransformations.translate(new Vector3f(translate.getX(), translate.getY(), translate.getZ()));
@@ -26,7 +25,7 @@ public class GraphicConveyor {
     }
 
     /**
-     * Система корд камеры +перевод всех объектов сцены в систему координат камеры
+     * Система корд камеры +перевод всех объектов сцены в систему координат камеры.
      */
 
     private static Matrix4f lookAt(Vector3f eye, Vector3f target, Vector3f up) {
@@ -51,7 +50,7 @@ public class GraphicConveyor {
     }
 
     /**
-     * Матрица перспективы. я хз что с ней делать, вроде как живое, но я гарантировать не могу
+     * Матрица перспективы.
      */
 
     public static Matrix4f perspective(
