@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.RadioMenuItem?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane fx:id="mainPane" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.cgvsu.GuiController">
+
+    <!-- Верхняя часть - Меню и Панель инструментов -->
+    <top>
+        <VBox>
+            <MenuBar>
+                <Menu text="Файл">
+                    <MenuItem onAction="#onOpenModelMenuItemClick" text="Открыть модель..." />
+                    <MenuItem onAction="#onSaveModelMenuItemClick" text="Сохранить модель..." />
+                    <SeparatorMenuItem />
+                    <MenuItem onAction="#onExitMenuItemClick" text="Выход" />
+                </Menu>
+
+                <Menu text="Правка">
+                    <MenuItem onAction="#onDeleteVertexMenuItemClick" text="Удалить вершину" />
+                    <MenuItem onAction="#onDeletePolygonMenuItemClick" text="Удалить полигон" />
+                    <SeparatorMenuItem />
+                    <MenuItem onAction="#onClearSceneMenuItemClick" text="Очистить сцену" />
+                </Menu>
+
+                <Menu text="Вид">
+                    <Menu fx:id="themeMenu" text="Тема оформления">
+                        <RadioMenuItem fx:id="lightThemeItem" onAction="#onLightThemeClick" text="Светлая" />
+                        <RadioMenuItem fx:id="darkThemeItem" onAction="#onDarkThemeClick" text="Тёмная" />
+                    </Menu>
+                </Menu>
+            </MenuBar>
+        </VBox>
+    </top>
+
+    <!-- Левая часть - Управление моделями -->
+    <left>
+        <VBox fx:id="leftPanel" maxWidth="300" prefWidth="250" spacing="10">
+            <Label alignment="CENTER" prefHeight="17.0" prefWidth="253.0" text="Модели" />
+
+            <!-- Список моделей -->
+            <ListView fx:id="modelListView" onMouseClicked="#onModelListSelectionChanged" prefHeight="200" />
+
+            <!-- Кнопки управления моделями -->
+            <HBox spacing="5">
+                <Button fx:id="selectAllBtn" onAction="#onSelectAllModelsClick" prefHeight="25.0" prefWidth="129.0" text="Выбрать все" />
+            <Button fx:id="deleteAllSelectionClickBtn1" layoutX="137.0" layoutY="10.0" onAction="#onDeleteAllSelectionClick" prefHeight="25.0" prefWidth="130.0" text="Удалить все" />
+            </HBox>
+
+            <Button fx:id="removeSelectedBtn" onAction="#onRemoveSelectedModelsClick" prefHeight="25.0" prefWidth="251.0" text="Удалить выбранные" />
+         <Button fx:id="resetSelectionBtn" onAction="#onResetSelectionBtn" prefHeight="25.0" prefWidth="251.0" text="Сбросить выделение" />
+
+            <Separator />
+
+            <Label alignment="CENTER" prefHeight="17.0" prefWidth="250.0" text="Редактирование модели" />
+            <HBox spacing="5">
+                <Button fx:id="removeVertexBtn" onAction="#onRemoveVertexClick" prefHeight="25.0" prefWidth="126.0" text="Удалить вершину" />
+                <Button fx:id="removePolygonBtn" onAction="#onRemovePolygonClick" prefHeight="25.0" prefWidth="125.0" text="Удалить полигон" />
+            </HBox>
+        </VBox>
+    </left>
+
+    <!-- Центр - Canvas для отрисовки -->
+    <center>
+        <VBox fx:id="canvasContainer" prefHeight="854.0" prefWidth="158.0">
+            <Canvas fx:id="canvas" />
+        </VBox>
+    </center>
+
+    <!-- Правая часть - Управление камерой и трансформации -->
+    <right>
+        <VBox fx:id="rightPanel" maxWidth="350" minWidth="250" prefWidth="300" spacing="15">
+            <!-- Управление камерами -->
+            <Label alignment="CENTER" prefHeight="17.0" prefWidth="302.0" text="Камеры" />
+            <ListView fx:id="cameraListView" prefHeight="100" />
+            <HBox spacing="5">
+                <Button fx:id="addCameraBtn" onAction="#onAddCameraClick" prefHeight="25.0" prefWidth="161.0" text="Добавить камеру" />
+                <Button fx:id="removeCameraBtn" onAction="#onRemoveCameraClick" prefHeight="25.0" prefWidth="155.0" text="Удалить" />
+            </HBox>
+
+            <Separator />
+
+            <!-- Режимы рендеринга -->
+            <Label alignment="CENTER" prefHeight="17.0" prefWidth="301.0" text="Режим отображения" />
+
+            <HBox alignment="CENTER" spacing="10">
+                <ToggleButton fx:id="wireframeToggle" onAction="#onWireframeModeClick" text="Каркас" />
+                <ToggleButton fx:id="textureToggle" onAction="#onTextureModeClick" text="Текстура" />
+                <ToggleButton fx:id="lightingToggle" onAction="#onLightingModeClick" text="Освещение" />
+            </HBox>
+
+            <Separator />
+
+            <!-- Масштабирование -->
+            <Label alignment="CENTER" prefHeight="17.0" prefWidth="300.0" text="Масштабирование" />
+            <GridPane hgap="5" vgap="5">
+                <Label text="X:" GridPane.columnIndex="0" GridPane.halignment="CENTER" GridPane.rowIndex="0" GridPane.valignment="CENTER" />
+                <TextField fx:id="scaleXField" prefWidth="80" text="1.0" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                <Label text="Y:" GridPane.columnIndex="0" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
+                <TextField fx:id="scaleYField" prefHeight="25.0" prefWidth="280.0" text="1.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                <Label text="Z:" GridPane.columnIndex="0" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER" />
+                <TextField fx:id="scaleZField" prefWidth="80" text="1.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <columnConstraints>
+               <ColumnConstraints />
+               <ColumnConstraints halignment="CENTER" />
+            </columnConstraints>
+            <rowConstraints>
+               <RowConstraints />
+               <RowConstraints />
+               <RowConstraints />
+            </rowConstraints>
+            </GridPane>
+            <Button fx:id="applyScaleBtn" onAction="#onApplyScaleClick" prefHeight="25.0" prefWidth="300.0" text="Применить масштаб" />
+
+            <!-- Вращение -->
+            <Label alignment="CENTER" prefHeight="17.0" prefWidth="300.0" text="Вращение" />
+            <GridPane hgap="5" vgap="5">
+                <Label text="X°:" GridPane.columnIndex="0" GridPane.halignment="CENTER" GridPane.rowIndex="0" GridPane.valignment="CENTER" />
+                <TextField fx:id="rotateXField" prefHeight="25.0" prefWidth="275.0" text="0" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                <Label text="Y°:" GridPane.columnIndex="0" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
+                <TextField fx:id="rotateYField" prefWidth="80" text="0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                <Label text="Z°:" GridPane.columnIndex="0" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER" />
+                <TextField fx:id="rotateZField" prefWidth="80" text="0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <columnConstraints>
+               <ColumnConstraints />
+               <ColumnConstraints halignment="CENTER" />
+            </columnConstraints>
+            <rowConstraints>
+               <RowConstraints />
+               <RowConstraints />
+               <RowConstraints />
+            </rowConstraints>
+            </GridPane>
+            <Button fx:id="applyRotationBtn" onAction="#onApplyRotationClick" prefHeight="25.0" prefWidth="300.0" text="Применить вращение" />
+
+            <!-- Перемещение -->
+            <Label text="Перемещение" />
+            <GridPane hgap="5" vgap="5">
+                <Label text="X:" GridPane.columnIndex="0" GridPane.halignment="CENTER" GridPane.rowIndex="0" GridPane.valignment="CENTER" />
+                <TextField fx:id="translateXField" prefWidth="80" text="0" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                <Label text="Y:" GridPane.columnIndex="0" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
+                <TextField fx:id="translateYField" prefHeight="25.0" prefWidth="280.0" text="0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                <Label text="Z:" GridPane.columnIndex="0" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER" />
+                <TextField fx:id="translateZField" prefWidth="80" text="0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <columnConstraints>
+               <ColumnConstraints />
+               <ColumnConstraints halignment="CENTER" />
+            </columnConstraints>
+            <rowConstraints>
+               <RowConstraints />
+               <RowConstraints />
+               <RowConstraints />
+            </rowConstraints>
+            </GridPane>
+            <Button fx:id="applyTranslationBtn" onAction="#onApplyTranslationClick" prefHeight="25.0" prefWidth="300.0" text="Применить перемещение" />
+
+            <Separator />
+
+            <!-- Сброс и опции сохранения -->
+            <Button fx:id="resetTransformBtn" onAction="#onResetTransformationsClick" prefHeight="25.0" prefWidth="300.0" text="Сбросить преобразования" />
+        </VBox>
+    </right>
+
+    <!-- Нижняя часть - Статус бар -->
+    <bottom>
+        <HBox fx:id="statusBar" prefHeight="30">
+            <Label fx:id="statusLabel" text="Готово" />
+        </HBox>
+    </bottom>
+</BorderPane>

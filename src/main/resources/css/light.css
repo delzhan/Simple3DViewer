@@ -1,0 +1,125 @@
+.root {
+    -fx-background-color: #f8f9fa;
+    -fx-text-fill: #212529;
+}
+
+.panel {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #dee2e6;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-padding: 10;
+}
+
+.button {
+    -fx-background-color: #6c757d;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 4;
+}
+
+.button:hover {
+    -fx-background-color: #5a6268;
+}
+
+.danger-button {
+    -fx-background-color: #495057;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 4;
+}
+
+.danger-button:hover {
+    -fx-background-color: #343a40;
+}
+
+.canvas-container {
+    -fx-border-color: #adb5bd;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-padding: 10;
+}
+
+.canvas {
+    -fx-background-color: #e9ecef;
+}
+
+.status-bar {
+    -fx-background-color: #e9ecef;
+    -fx-border-color: #dee2e6;
+    -fx-border-width: 1 0 0 0;
+    -fx-padding: 5;
+}
+
+.status-label {
+    -fx-text-fill: #495057;
+    -fx-font-size: 12px;
+}
+
+.label {
+    -fx-text-fill: #212529;
+    -fx-font-size: 12px;
+    -fx-min-width: 40px;
+}
+
+.grid-pane {
+    -fx-hgap: 10;
+    -fx-vgap: 10;
+}
+
+.text-field {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #ced4da;
+    -fx-border-width: 1;
+    -fx-border-radius: 3;
+}
+
+.combo-box {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #ced4da;
+    -fx-border-width: 1;
+    -fx-border-radius: 3;
+}
+
+.list-view {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #ced4da;
+    -fx-border-width: 1;
+    -fx-border-radius: 3;
+}
+
+.menu-bar {
+    -fx-background-color: #f8f9fa;
+}
+
+.menu {
+    -fx-text-fill: #212529;
+}
+
+.menu-item {
+    -fx-text-fill: #212529;
+}
+
+.tool-bar {
+    -fx-background-color: #e9ecef;
+}
+
+.toggle-button {
+    -fx-background-color: #6c757d;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 4;
+}
+
+.toggle-button:hover {
+    -fx-background-color: #5a6268;
+}
+
+.toggle-button:selected {
+    -fx-background-color: #495057;
+}
+
+.toggle-button:selected:hover {
+    -fx-background-color: #343a40;
+}
