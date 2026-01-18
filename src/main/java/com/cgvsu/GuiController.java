@@ -1,9 +1,12 @@
 package com.cgvsu;
 
+import com.cgvsu.controller.Theme;
+import com.cgvsu.controller.ThemeManager;
+import com.cgvsu.model.Polygon;
 import com.cgvsu.render_engine.RenderEngine;
+import com.cgvsu.objwriter.ObjWriter;
+import com.cgvsu.objwriter.ObjWriterException;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
@@ -17,14 +20,14 @@ import javafx.stage.FileChooser;
 import javafx.util.Duration;
 
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.io.IOException;
 import java.io.File;
+import java.io.IOException;
+import java.util.Optional;
+import java.util.Set;
 
 import com.cgvsu.math.Vector3f;
 import com.cgvsu.model.Model;
 import com.cgvsu.model.ModelInstance;
-import com.cgvsu.model.Scene;
 import com.cgvsu.objreader.ObjReader;
 
 public class GuiController {
@@ -61,31 +64,23 @@ public class GuiController {
     @FXML private TextField translateZField;
     @FXML private CheckBox applyTransformOnSaveCheck;
 
-    // Тема
     @FXML private RadioMenuItem lightThemeItem;
     @FXML private RadioMenuItem darkThemeItem;
 
-    private Scene scene = new Scene();
-    private Timeline timeline;
-    private boolean isDarkTheme = false;
+    private com.cgvsu.model.Scene modelScene = new com.cgvsu.model.Scene();
 
-    // Добавляем слушатели для изменения размера
-    private ChangeListener<Number> windowResizeListener;
+    private Timeline timeline;
+    private ThemeManager themeManager;
 
     @FXML
     public void initialize() {
-        // ФИКСИРУЕМ РАЗМЕР ПАНЕЛЕЙ
-         fixPanelsSize();
+        System.out.println("GuiController initialized");
 
-        // Привязка размеров Canvas к размерам контейнера
+        fixPanelsSize();
+
         canvas.widthProperty().bind(canvasContainer.widthProperty());
         canvas.heightProperty().bind(canvasContainer.heightProperty());
 
-        modelListView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        renderModeCombo.getItems().addAll("Wireframe", "Solid", "Textured", "Shaded");
-        renderModeCombo.setValue("Wireframe");
-
-        // Настройка значений по умолчанию
         scaleXField.setText("1.0");
         scaleYField.setText("1.0");
         scaleZField.setText("1.0");
@@ -96,16 +91,32 @@ public class GuiController {
         translateYField.setText("0");
         translateZField.setText("0");
 
+        modelListView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+
         // Камеры
-        cameraListView.getItems().add("Camera 1 (Main)");
+        cameraListView.getItems().add("Camera 1");
+
+        ToggleGroup themeToggleGroup = new ToggleGroup();
+        lightThemeItem.setToggleGroup(themeToggleGroup);
+        darkThemeItem.setToggleGroup(themeToggleGroup);
+
+        // Инициализируем ThemeManager и применяем светлую тему по умолчанию
+        themeManager = new ThemeManager();
+        if (mainPane.getScene() != null) {
+            themeManager.applyTheme(mainPane.getScene());
+        } else {
+            // Если сцена еще не доступна, подождать и применить позже
+            Platform.runLater(() -> themeManager.applyTheme(mainPane.getScene()));
+        }
+
+        lightThemeItem.setSelected(true);
 
         startRendering();
-        applyLightTheme();
+
         updateStatus();
     }
 
     private void fixPanelsSize() {
-        // Жестко фиксируем размеры панелей
         leftPanel.setMinWidth(250);
         leftPanel.setMaxWidth(250);
         leftPanel.setPrefWidth(250);
@@ -114,8 +125,7 @@ public class GuiController {
         rightPanel.setMaxWidth(300);
         rightPanel.setPrefWidth(300);
 
-        // Центральная область будет занимать всё оставшееся пространство
-        canvasContainer.setMinWidth(600); // Минимальная ширина для канваса
+        canvasContainer.setMinWidth(600);
     }
 
     private void startRendering() {
@@ -128,8 +138,8 @@ public class GuiController {
 
             if (width > 0 && height > 0) {
                 canvas.getGraphicsContext2D().clearRect(0, 0, width, height);
-                scene.getCamera().setAspectRatio((float) (width / height));
-                RenderEngine.renderScene(canvas.getGraphicsContext2D(), scene, (int) width, (int) height);
+                modelScene.getCamera().setAspectRatio((float) (width / height));
+                RenderEngine.renderScene(canvas.getGraphicsContext2D(), modelScene, (int) width, (int) height);
             }
         });
 
@@ -146,28 +156,111 @@ public class GuiController {
         fileChooser.setTitle("Open 3D Model");
 
         File file = fileChooser.showOpenDialog((Stage) canvas.getScene().getWindow());
-        if (file == null) return;
+        if (file == null) {
+            System.out.println("File not selected");
+            return;
+        }
 
         try {
-            String fileContent = Files.readString(Path.of(file.getAbsolutePath()));
+            System.out.println("=== \n" + "START FILE LOADING ===");
+            System.out.println("File: " + file.getAbsolutePath());
+            System.out.println("Size: " + file.length() + " byte");
+
+            String fileContent = new String(Files.readAllBytes(file.toPath()), java.nio.charset.StandardCharsets.UTF_8);
+            System.out.println("Characters read: " + fileContent.length());
+
+            System.out.println("Parsing an OBJ file...");
             Model model = ObjReader.read(fileContent);
+
+            System.out.println("Model loaded successfully!");
+            System.out.println("Statistics:");
+            System.out.println("  Vertex: " + model.getVertices().size());
+            System.out.println("  Texture coordinates: " + model.getTextureVertices().size());
+            System.out.println("  Normal: " + model.getNormals().size());
+            System.out.println("  Polygons: " + model.getPolygons().size());
+
+            if (!model.getPolygons().isEmpty()) {
+                Polygon firstPolygon = model.getPolygons().get(0);
+                System.out.println("First polygon:");
+                System.out.println("  Vertex indices: " + firstPolygon.getVertexIndices());
+                if (firstPolygon.getTextureVertexIndices() != null) {
+                    System.out.println("  Texture indexes: " + firstPolygon.getTextureVertexIndices());
+                }
+                if (firstPolygon.getNormalIndices() != null) {
+                    System.out.println("  Normal indices: " + firstPolygon.getNormalIndices());
+                }
+            }
+
             ModelInstance instance = new ModelInstance(model);
-            scene.addModelInstance(instance);
+            modelScene.addModelInstance(instance);
 
             updateModelList();
-            int lastIndex = scene.getModelCount() - 1;
+            int lastIndex = modelScene.getModelCount() - 1;
             modelListView.getSelectionModel().select(lastIndex);
-            scene.selectModel(lastIndex);
+            modelScene.selectModel(lastIndex);
 
             updateStatus("Model loaded: " + file.getName());
+            System.out.println("=== DOWNLOAD COMPLETED SUCCESSFULLY ===\n");
+
+        } catch (com.cgvsu.objreader.ObjReaderException e) {
+            System.err.println("=== OBJ PARSING ERROR ===");
+            System.err.println("Message: " + e.getMessage());
+            System.err.println("Line number: " + e.getLineIndex());
+            e.printStackTrace();
+            System.err.println("=== END OF ERROR ===");
+
+            showError("OBJ Parsing Error",
+                    "Failed to parse OBJ file at line " + e.getLineIndex() + ":\n" +
+                            e.getMessage());
+
         } catch (Exception e) {
-            showError("Error loading model", e.getMessage());
+            System.err.println("=== GENERAL LOADING ERROR ===");
+            System.err.println("Type: " + e.getClass().getName());
+            System.err.println("Messagt: " + e.getMessage());
+            e.printStackTrace();
+            System.err.println("=== END OF ERROR ===");
+
+            showError("Error loading model",
+                    "Failed to load model: " + e.getClass().getSimpleName() +
+                            "\n" + e.getMessage());
         }
     }
 
     @FXML
     public void onSaveModelMenuItemClick(ActionEvent event) {
-        updateStatus("Save model - not implemented yet");
+        Set<Integer> selectedIndices = modelScene.getSelectedIndices();
+        if (selectedIndices.isEmpty()) {
+            showError("Нет выбранной модели", "Пожалуйста, выберите модель для сохранения.");
+            return;
+        }
+
+        int modelIndex = selectedIndices.iterator().next();
+        ModelInstance instance = modelScene.getModelInstance(modelIndex);
+
+        if (instance == null) {
+            showError("Ошибка", "Не удалось получить выбранную модель.");
+            return;
+        }
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Сохранить модель как OBJ");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("OBJ Files", "*.obj"));
+
+        File file = fileChooser.showSaveDialog((Stage) canvas.getScene().getWindow());
+
+        if (file != null) {
+            try {
+                Model modelToSave = instance.getModel();
+                ObjWriter.write(modelToSave, file.getAbsolutePath());
+                updateStatus("Модель успешно сохранена: " + file.getName());
+
+            } catch (ObjWriterException e) {
+                showError("Ошибка сохранения OBJ",
+                        "Строка " + e.getLineIndex() + ": " + e.getMessage());
+            } catch (Exception e) {
+                showError("Ошибка", "Произошла ошибка при сохранении:\n" + e.getMessage());
+            }
+        }
     }
 
     @FXML
@@ -190,7 +283,7 @@ public class GuiController {
 
     @FXML
     public void onClearSceneMenuItemClick(ActionEvent event) {
-        scene.clear();
+        modelScene.clear();
         updateModelList();
         updateStatus("Scene cleared");
     }
@@ -214,42 +307,110 @@ public class GuiController {
 
     @FXML
     public void onLightThemeClick(ActionEvent event) {
-        applyLightTheme();
-        updateStatus("Light theme applied");
+        if (mainPane.getScene() != null) {
+            themeManager.setTheme(mainPane.getScene(), Theme.LIGHT);
+            lightThemeItem.setSelected(true);
+            updateStatus("Light theme applied");
+        }
     }
 
     @FXML
     public void onDarkThemeClick(ActionEvent event) {
-        applyDarkTheme();
-        updateStatus("Dark theme applied");
+        if (mainPane.getScene() != null) {
+            themeManager.setTheme(mainPane.getScene(), Theme.DARK);
+            darkThemeItem.setSelected(true);
+            updateStatus("Dark theme applied");
+        }
     }
 
     // === Левая панель - Управление моделями ===
 
     @FXML
     public void onModelListSelectionChanged() {
-        scene.clearSelection();
+        modelScene.clearSelection();
         for (int index : modelListView.getSelectionModel().getSelectedIndices()) {
-            scene.addToSelection(index);
+            modelScene.addToSelection(index);
         }
-        updateStatus("Selected " + scene.getSelectedIndices().size() + " model(s)");
+        updateStatus("Selected " + modelScene.getSelectedIndices().size() + " model(s)");
     }
 
     @FXML
     public void onSelectAllModelsClick(ActionEvent event) {
+        modelScene.clearSelection();
+
+        for (int i = 0; i < modelScene.getModelCount(); i++) {
+            modelScene.addToSelection(i);
+        }
+
         modelListView.getSelectionModel().selectAll();
+
+        updateStatus("Все модели выбраны (" + modelScene.getModelCount() + " шт.)");
     }
 
     @FXML
-    public void onClearSelectionClick(ActionEvent event) {
+    public void onDeleteAllSelectionClick(ActionEvent actionEvent) {
+        if (modelScene.getModelCount() == 0) {
+            updateStatus("Нет моделей для удаления");
+            return;
+        }
+
+        Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmAlert.setTitle("Удаление всех моделей");
+        confirmAlert.setHeaderText("Вы уверены, что хотите удалить все модели?");
+        confirmAlert.setContentText("Будет удалено " + modelScene.getModelCount() + " моделей. Это действие нельзя отменить.");
+
+        Optional<ButtonType> result = confirmAlert.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            modelScene.clear();
+            updateModelList();
+            resetTransformationFields();
+            updateStatus("Все модели удалены");
+        } else {
+            updateStatus("Удаление отменено");
+        }
+    }
+
+    @FXML
+    public void onResetSelectionBtn(ActionEvent actionEvent) {
         modelListView.getSelectionModel().clearSelection();
+        modelScene.clearSelection();
+        updateStatus("Выделение сброшено");
+    }
+
+    private void resetTransformationFields() {
+        scaleXField.setText("1.0");
+        scaleYField.setText("1.0");
+        scaleZField.setText("1.0");
+        rotateXField.setText("0");
+        rotateYField.setText("0");
+        rotateZField.setText("0");
+        translateXField.setText("0");
+        translateYField.setText("0");
+        translateZField.setText("0");
     }
 
     @FXML
     public void onRemoveSelectedModelsClick(ActionEvent event) {
-        scene.removeSelectedModels();
-        updateModelList();
-        updateStatus("Selected models removed");
+        Set<Integer> selectedIndices = modelScene.getSelectedIndices();
+        if (selectedIndices.isEmpty()) {
+            updateStatus("Нет выбранных моделей для удаления");
+            return;
+        }
+
+        Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmAlert.setTitle("Удаление выбранных моделей");
+        confirmAlert.setHeaderText("Вы уверены, что хотите удалить выбранные модели?");
+        confirmAlert.setContentText("Будет удалено " + selectedIndices.size() + " моделей. Это действие нельзя отменить.");
+
+        Optional<ButtonType> result = confirmAlert.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            modelScene.removeSelectedModels();
+            updateModelList();
+            resetTransformationFields();
+            updateStatus("Выбранные модели удалены (" + selectedIndices.size() + " шт.)");
+        } else {
+            updateStatus("Удаление отменено");
+        }
     }
 
     @FXML
@@ -266,32 +427,32 @@ public class GuiController {
 
     @FXML
     public void onCameraForwardClick(ActionEvent event) {
-        scene.getCamera().movePosition(new Vector3f(0, 0, -TRANSLATION));
+        modelScene.getCamera().movePosition(new Vector3f(0, 0, -TRANSLATION));
     }
 
     @FXML
     public void onCameraBackwardClick(ActionEvent event) {
-        scene.getCamera().movePosition(new Vector3f(0, 0, TRANSLATION));
+        modelScene.getCamera().movePosition(new Vector3f(0, 0, TRANSLATION));
     }
 
     @FXML
     public void onCameraLeftClick(ActionEvent event) {
-        scene.getCamera().movePosition(new Vector3f(TRANSLATION, 0, 0));
+        modelScene.getCamera().movePosition(new Vector3f(TRANSLATION, 0, 0));
     }
 
     @FXML
     public void onCameraRightClick(ActionEvent event) {
-        scene.getCamera().movePosition(new Vector3f(-TRANSLATION, 0, 0));
+        modelScene.getCamera().movePosition(new Vector3f(-TRANSLATION, 0, 0));
     }
 
     @FXML
     public void onCameraUpClick(ActionEvent event) {
-        scene.getCamera().movePosition(new Vector3f(0, TRANSLATION, 0));
+        modelScene.getCamera().movePosition(new Vector3f(0, TRANSLATION, 0));
     }
 
     @FXML
     public void onCameraDownClick(ActionEvent event) {
-        scene.getCamera().movePosition(new Vector3f(0, -TRANSLATION, 0));
+        modelScene.getCamera().movePosition(new Vector3f(0, -TRANSLATION, 0));
     }
 
     @FXML
@@ -325,7 +486,7 @@ public class GuiController {
             double scaleY = Double.parseDouble(scaleYField.getText());
             double scaleZ = Double.parseDouble(scaleZField.getText());
 
-            for (ModelInstance instance : scene.getSelectedModelInstances()) {
+            for (ModelInstance instance : modelScene.getSelectedModelInstances()) {
                 instance.scaleX(scaleX);
                 instance.scaleY(scaleY);
                 instance.scaleZ(scaleZ);
@@ -344,7 +505,7 @@ public class GuiController {
             double rotateY = Double.parseDouble(rotateYField.getText());
             double rotateZ = Double.parseDouble(rotateZField.getText());
 
-            for (ModelInstance instance : scene.getSelectedModelInstances()) {
+            for (ModelInstance instance : modelScene.getSelectedModelInstances()) {
                 instance.rotateX(rotateX);
                 instance.rotateY(rotateY);
                 instance.rotateZ(rotateZ);
@@ -363,7 +524,7 @@ public class GuiController {
             double translateY = Double.parseDouble(translateYField.getText());
             double translateZ = Double.parseDouble(translateZField.getText());
 
-            for (ModelInstance instance : scene.getSelectedModelInstances()) {
+            for (ModelInstance instance : modelScene.getSelectedModelInstances()) {
                 instance.translateX(translateX);
                 instance.translateY(translateY);
                 instance.translateZ(translateZ);
@@ -377,7 +538,7 @@ public class GuiController {
 
     @FXML
     public void onResetTransformationsClick(ActionEvent event) {
-        scene.resetSelectedTransformations();
+        modelScene.resetSelectedTransformations();
 
         scaleXField.setText("1.0");
         scaleYField.setText("1.0");
@@ -396,7 +557,7 @@ public class GuiController {
 
     private void updateModelList() {
         modelListView.getItems().clear();
-        for (int i = 0; i < scene.getModelCount(); i++) {
+        for (int i = 0; i < modelScene.getModelCount(); i++) {
             modelListView.getItems().add("Model " + (i + 1));
         }
     }
@@ -406,8 +567,8 @@ public class GuiController {
     }
 
     private void updateStatus(String message) {
-        String modelInfo = " | Models: " + scene.getModelCount() +
-                " | Selected: " + scene.getSelectedIndices().size();
+        String modelInfo = " | Models: " + modelScene.getModelCount() +
+                " | Selected: " + modelScene.getSelectedIndices().size();
         statusLabel.setText(message + modelInfo);
     }
 
@@ -417,27 +578,5 @@ public class GuiController {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
-    }
-
-    private void applyLightTheme() {
-        isDarkTheme = false;
-        mainPane.setStyle("-fx-background-color: #f8f9fa;");
-        leftPanel.setStyle("-fx-background-color: #ffffff; -fx-border-color: #dee2e6; -fx-border-width: 1; -fx-padding: 10;");
-        rightPanel.setStyle("-fx-background-color: #ffffff; -fx-border-color: #dee2e6; -fx-border-width: 1; -fx-padding: 10;");
-        canvasContainer.setStyle("-fx-border-color: #adb5bd; -fx-border-width: 1; -fx-border-radius: 4;");
-        canvas.setStyle("-fx-background-color: #e9ecef;");
-        statusBar.setStyle("-fx-background-color: #e9ecef; -fx-border-color: #dee2e6; -fx-border-width: 1 0 0 0;");
-        statusLabel.setStyle("-fx-text-fill: #495057; -fx-font-size: 12px;");
-    }
-
-    private void applyDarkTheme() {
-        isDarkTheme = true;
-        mainPane.setStyle("-fx-background-color: #212529;");
-        leftPanel.setStyle("-fx-background-color: #343a40; -fx-border-color: #495057; -fx-border-width: 1; -fx-padding: 10;");
-        rightPanel.setStyle("-fx-background-color: #343a40; -fx-border-color: #495057; -fx-border-width: 1; -fx-padding: 10;");
-        canvasContainer.setStyle("-fx-border-color: #495057; -fx-border-width: 1; -fx-border-radius: 4;");
-        canvas.setStyle("-fx-background-color: #1a1a2e;");
-        statusBar.setStyle("-fx-background-color: #343a40; -fx-border-color: #495057; -fx-border-width: 1 0 0 0;");
-        statusLabel.setStyle("-fx-text-fill: #f8f9fa; -fx-font-size: 12px;");
     }
 }

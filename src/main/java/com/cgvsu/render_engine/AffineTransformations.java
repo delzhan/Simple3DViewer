@@ -2,7 +2,6 @@ package com.cgvsu.render_engine;
 
 import com.cgvsu.math.Matrix4f;
 import com.cgvsu.math.Vector3f;
-import com.cgvsu.math.Vector4f;
 
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;

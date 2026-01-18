@@ -4,7 +4,6 @@ import com.cgvsu.math.Matrix4f;
 import com.cgvsu.math.Vector2f;
 import com.cgvsu.math.Vector3f;
 import com.cgvsu.math.Vector4f;
-import com.cgvsu.render_engine.AffineTransformations;
 
 import static java.lang.Math.*;
 

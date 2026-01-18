@@ -154,6 +154,10 @@ public class Vector3f extends AbstractVector {
         return new Vector3f(x, y, z);
     }
 
+    public float distanceTo(Vector3f other) {
+        return this.sub(other).length();
+    }
+
     @Override
     public Vector3f normalizeV() {
         return (Vector3f) super.normalizeV();

@@ -15,6 +15,10 @@ public class Polygon {
         normalIndices = new ArrayList<Integer>();
     }
 
+    public boolean isTriangle() {
+        return vertexIndices.size() == 3;
+    }
+
     public void setVertexIndices(ArrayList<Integer> vertexIndices) {
         if (vertexIndices == null) {
             throw new IllegalArgumentException("Vertex indices cannot be null");

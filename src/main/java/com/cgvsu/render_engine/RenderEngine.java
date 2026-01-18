@@ -12,58 +12,58 @@ import java.util.ArrayList;
 
 public class RenderEngine {
     //Возможно не понадобится, он нигде не используется, я хз, Настя, почекай пж, нужен ли он, если внизу есть рендерСцене
-//    public static void render(
-//            final GraphicsContext graphicsContext,
-//            final Camera camera,
-//            final Model mesh,
-//            final int width,
-//            final int height) {
-//        // Создаем единичную матрицу модели
-//        Matrix4f modelMatrix = new Matrix4f(1);
-//        Matrix4f viewMatrix = camera.getViewMatrix();
-//        Matrix4f projectionMatrix = camera.getProjectionMatrix();
-//
-//        // Создаем копию modelMatrix и умножаем матрицы
-//        Matrix4f modelViewProjectionMatrix = new Matrix4f(modelMatrix);
-//        modelViewProjectionMatrix.multiply(viewMatrix);
-//        modelViewProjectionMatrix.multiply(projectionMatrix);
-//
-//        final int nPolygons = mesh.getPolygons().size();
-//        for (int polygonInd = 0; polygonInd < nPolygons; ++polygonInd) {
-//            final int nVerticesInPolygon = mesh.getPolygons().get(polygonInd).getVertexIndices().size();
-//
-//            ArrayList<Vector2f> resultPoints = new ArrayList<>();
-//            for (int vertexInPolygonInd = 0; vertexInPolygonInd < nVerticesInPolygon; ++vertexInPolygonInd) {
-//                int vertexIndex = mesh.getPolygons().get(polygonInd).getVertexIndices().get(vertexInPolygonInd);
-//                Vector3f vertex = mesh.getVertices().get(vertexIndex - 1);
-//
-//                // Преобразуем вершину с использованием матрицы трансформации
-//                Vector3f transformedVertex = multiplyMatrix4ByVector3(modelViewProjectionMatrix, vertex);
-//
-//                // Преобразуем в экранные координаты
-//                Vector2f resultPoint = GraphicConveyor.vertexToPoint(transformedVertex, width, height);
-//                resultPoints.add(resultPoint);
-//            }
-//
-//            // Рисуем линии между вершинами полигона
-//            for (int vertexInPolygonInd = 1; vertexInPolygonInd < nVerticesInPolygon; ++vertexInPolygonInd) {
-//                graphicsContext.strokeLine(
-//                        resultPoints.get(vertexInPolygonInd - 1).getX(),
-//                        resultPoints.get(vertexInPolygonInd - 1).getY(),
-//                        resultPoints.get(vertexInPolygonInd).getX(),
-//                        resultPoints.get(vertexInPolygonInd).getY());
-//            }
-//
-//            // Замыкаем полигон (последняя вершина с первой)
-//            if (nVerticesInPolygon > 0) {
-//                graphicsContext.strokeLine(
-//                        resultPoints.get(nVerticesInPolygon - 1).getX(),
-//                        resultPoints.get(nVerticesInPolygon - 1).getY(),
-//                        resultPoints.get(0).getX(),
-//                        resultPoints.get(0).getY());
-//            }
-//        }
-//    }
+    public static void render(
+            final GraphicsContext graphicsContext,
+            final Camera camera,
+            final Model mesh,
+            final int width,
+            final int height) {
+        // Создаем единичную матрицу модели
+        Matrix4f modelMatrix = new Matrix4f(1);
+        Matrix4f viewMatrix = camera.getViewMatrix();
+        Matrix4f projectionMatrix = camera.getProjectionMatrix();
+
+        // Создаем копию modelMatrix и умножаем матрицы
+        Matrix4f modelViewProjectionMatrix = new Matrix4f(modelMatrix);
+        modelViewProjectionMatrix.multiply(viewMatrix);
+        modelViewProjectionMatrix.multiply(projectionMatrix);
+
+        final int nPolygons = mesh.getPolygons().size();
+        for (int polygonInd = 0; polygonInd < nPolygons; ++polygonInd) {
+            final int nVerticesInPolygon = mesh.getPolygons().get(polygonInd).getVertexIndices().size();
+
+            ArrayList<Vector2f> resultPoints = new ArrayList<>();
+            for (int vertexInPolygonInd = 0; vertexInPolygonInd < nVerticesInPolygon; ++vertexInPolygonInd) {
+                int vertexIndex = mesh.getPolygons().get(polygonInd).getVertexIndices().get(vertexInPolygonInd);
+                Vector3f vertex = mesh.getVertices().get(vertexIndex - 1);
+
+                // Преобразуем вершину с использованием матрицы трансформации
+                Vector3f transformedVertex = multiplyMatrix4ByVector3(modelViewProjectionMatrix, vertex);
+
+                // Преобразуем в экранные координаты
+                Vector2f resultPoint = GraphicConveyor.vertexToPoint(transformedVertex, width, height);
+                resultPoints.add(resultPoint);
+            }
+
+            // Рисуем линии между вершинами полигона
+            for (int vertexInPolygonInd = 1; vertexInPolygonInd < nVerticesInPolygon; ++vertexInPolygonInd) {
+                graphicsContext.strokeLine(
+                        resultPoints.get(vertexInPolygonInd - 1).getX(),
+                        resultPoints.get(vertexInPolygonInd - 1).getY(),
+                        resultPoints.get(vertexInPolygonInd).getX(),
+                        resultPoints.get(vertexInPolygonInd).getY());
+            }
+
+            // Замыкаем полигон (последняя вершина с первой)
+            if (nVerticesInPolygon > 0) {
+                graphicsContext.strokeLine(
+                        resultPoints.get(nVerticesInPolygon - 1).getX(),
+                        resultPoints.get(nVerticesInPolygon - 1).getY(),
+                        resultPoints.get(0).getX(),
+                        resultPoints.get(0).getY());
+            }
+        }
+    }
 
     public static void renderScene(
             final GraphicsContext graphicsContext,
@@ -193,7 +193,7 @@ public class RenderEngine {
             ArrayList<Vector2f> resultPoints = new ArrayList<>();
             for (int vertexInPolygonInd = 0; vertexInPolygonInd < nVerticesInPolygon; ++vertexInPolygonInd) {
                 int vertexIndex = mesh.getPolygons().get(polygonInd).getVertexIndices().get(vertexInPolygonInd);
-                Vector3f vertex = mesh.getVertices().get(vertexIndex - 1);
+                Vector3f vertex = mesh.getVertices().get(vertexIndex);
 
                 // Преобразуем вершину с использованием матрицы трансформации
                 Vector3f transformedVertex = multiplyMatrix4ByVector3(modelViewProjectionMatrix, vertex);
